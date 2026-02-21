@@ -1,0 +1,17 @@
+﻿{
+    "schema_version":  1,
+    "updated_at_utc":  "2026-02-20T19:07:58.1789404Z",
+    "upstream_repository":  "https://github.com/docling-project/docling.git",
+    "upstream_repository_local_path":  "D:\\code\\sparkeh9\\doclingdotnet\\upstream\\docling",
+    "upstream_branch":  "main",
+    "baseline_ported_ref":  "HEAD",
+    "baseline_ported_commit":  "684f59f263094622ee976886d0ce229d1952dd41",
+    "tracked_ref":  "origin/main",
+    "tracked_ref_commit":  "684f59f263094622ee976886d0ce229d1952dd41",
+    "behavioral_equivalence_status":  "partial",
+    "behavioral_equivalence_scope":  "docling-parse segmented PDF corpus parity only (not full docling pipeline parity).",
+    "behavioral_evidence_artifacts":  [
+                                          ".artifacts/parity/docling-parse-parity-report.json"
+                                      ],
+    "root_repo_commit":  "9eda659b4e3d54e74ec6304f691893fb7a9b149b"
+}

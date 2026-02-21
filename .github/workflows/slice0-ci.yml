@@ -1,0 +1,106 @@
+name: Slice0 CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  slice0-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Initialize workspace dependencies
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\scripts\init-workspace.ps1
+
+      - name: Build .NET workspace
+        run: dotnet build dotnet/DoclingDotNet.slnx --configuration Release
+
+      - name: Build spike solution
+        run: dotnet build dotnet/DoclingDotNet.Examples.slnx --configuration Release
+
+      - name: Pack DoclingDotNet NuGet
+        run: dotnet pack dotnet/src/DoclingDotNet/DoclingDotNet.csproj --configuration Release -o .artifacts/nupkg
+
+      - name: Upload NuGet Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: doclingdotnet-nupkg
+          path: .artifacts/nupkg
+
+      - name: Run Slice 0 smoke assertions
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\scripts\test-docling-parse-cabi-smoke.ps1
+
+      - name: Run parity harness (baseline corpus slice)
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\scripts\run-docling-parity-harness.ps1 -Output .artifacts/parity/docling-parse-parity-report.json -MaxOcrDrift 0 -TextMismatchSeverity Minor -GeometryMismatchSeverity Minor -ContextMismatchSeverity Minor --max-pages 20
+
+      - name: Run parity harness (strict parity lane, non-blocking)
+        id: parity_strict_geometry
+        continue-on-error: true
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\scripts\run-docling-parity-harness.ps1 -Output .artifacts/parity/docling-parse-parity-report.strict-geometry.json -MaxOcrDrift 0 -TextMismatchSeverity Major -GeometryMismatchSeverity Major -ContextMismatchSeverity Major --max-pages 20
+
+      - name: Package C ABI artifacts
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\scripts\package-docling-parse-cabi-artifacts.ps1 -Configuration Release -OutputDir .artifacts/slice0-win-x64
+
+      - name: Upload Slice 0 artifact bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: slice0-win-x64-cabi
+          path: .artifacts/slice0-win-x64
+
+      - name: Upload parity report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-report-win-x64
+          path: .artifacts/parity
+
+  slice0-linux-parity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Initialize workspace dependencies
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/init-workspace.ps1
+
+      - name: Run baseline parity harness (Linux blocking gate)
+        id: parity_linux_baseline
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/run-docling-parity-harness.ps1 -Output .artifacts/parity/docling-parse-parity-report.baseline.linux.json -MaxOcrDrift 0 -TextMismatchSeverity Minor -GeometryMismatchSeverity Minor -ContextMismatchSeverity Minor --max-pages 20
+
+      - name: Run strict parity harness (Linux strict telemetry, non-blocking)
+        id: parity_linux_strict
+        continue-on-error: true
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/run-docling-parity-harness.ps1 -Output .artifacts/parity/docling-parse-parity-report.strict-geometry.linux.json -MaxOcrDrift 0 -TextMismatchSeverity Major -GeometryMismatchSeverity Major -ContextMismatchSeverity Major --max-pages 20
+
+      - name: Upload parity report artifacts (Linux baseline gate + strict telemetry)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-report-linux
+          path: .artifacts/parity
+          if-no-files-found: ignore

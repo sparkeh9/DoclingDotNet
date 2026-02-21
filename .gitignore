@@ -1,0 +1,31 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# .NET build artifacts
+**/bin/
+**/obj/
+
+# Native/build artifacts
+**/build/
+**/build-*/
+**/externals/
+/.artifacts/
+
+# Spike test models
+dotnet/examples/Spike.OnnxRuntime/models/
+
+# Upstream cloned repositories (reference-only)
+/upstream/deps
+/upstream/docling
+/upstream/deps/**
+/upstream/docling/**
+!/upstream/README.md
+
+# Keep root workspace-focused files tracked
+!.agent/
+!docs/
+!spikes/
+!dotnet/

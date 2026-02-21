@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="examples/Spike.DoclingParseCAbi/Spike.DoclingParseCAbi.csproj" />
+  <Project Path="examples/Spike.OnnxRuntime/Spike.OnnxRuntime.csproj" />
+  <Project Path="examples/Spike.Pdfium/Spike.Pdfium.csproj" />
+  <Project Path="examples/Spike.Tesseract/Spike.Tesseract.csproj" />
+</Solution>

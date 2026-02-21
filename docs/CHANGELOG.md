@@ -1,0 +1,270 @@
+# Changelog
+
+All notable documentation and implementation coordination changes for this repository are tracked here.
+
+## [Unreleased]
+### Added
+- FS-001 initial parity harness implementation:
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityComparer.cs`
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityTypes.cs`
+  - `dotnet/tools/DoclingParityHarness/DoclingParityHarness.csproj`
+  - `dotnet/tools/DoclingParityHarness/Program.cs`
+  - `scripts/run-docling-parity-harness.ps1`
+- FS-004 initial pipeline semantics implementation:
+  - `dotnet/src/DoclingDotNet/Pipeline/PipelineExecution.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/PipelineExecutionSemanticsTests.cs`
+- FS-004 orchestration integration increment:
+  - `dotnet/src/DoclingDotNet/Pipeline/DoclingPdfConversionRunner.cs`
+  - `dotnet/src/DoclingDotNet/Parsing/IDoclingParseSession.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-004 phase-2 semantics increment:
+  - `dotnet/src/DoclingDotNet/Pipeline/PipelineExecution.cs`
+  - `dotnet/src/DoclingDotNet/Pipeline/DoclingPdfConversionRunner.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/PipelineExecutionSemanticsTests.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-004 phase-3 semantics increment:
+  - `dotnet/src/DoclingDotNet/Pipeline/PipelineExecution.cs` (`PipelineRunResult.StageResults`)
+  - `dotnet/tests/DoclingDotNet.Tests/PipelineExecutionSemanticsTests.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-004 phase-4 runner semantics increment:
+  - `dotnet/src/DoclingDotNet/Pipeline/DoclingPdfConversionRunner.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-004 phase-5 context extraction increment:
+  - `dotnet/src/DoclingDotNet/Parsing/IDoclingParseSession.cs`
+  - `dotnet/src/DoclingDotNet/Pipeline/DoclingPdfConversionRunner.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-004 phase-6 diagnostics + edge-case hardening increment:
+  - `dotnet/src/DoclingDotNet/Pipeline/DoclingPdfConversionRunner.cs`
+  - `dotnet/src/DoclingDotNet/Parsing/IDoclingParseSession.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-004 phase-7 batch + artifact contract increment:
+  - `dotnet/src/DoclingDotNet/Pipeline/DoclingPdfConversionRunner.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-004 phase-8 artifact persistence + aggregation increment:
+  - `dotnet/src/DoclingDotNet/Pipeline/DoclingPdfConversionRunner.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-006 phase-1 OCR provider substrate increment:
+  - `dotnet/src/DoclingDotNet/Ocr/DoclingOcrProviderContracts.cs`
+  - `dotnet/src/DoclingDotNet/Pipeline/DoclingPdfConversionRunner.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-006 phase-2 Tesseract OCR adapter increment:
+  - `dotnet/src/DoclingDotNet/Ocr/TesseractOcrProvider.cs`
+  - `dotnet/src/DoclingDotNet/DoclingDotNet.csproj`
+  - `dotnet/tests/DoclingDotNet.Tests/TesseractOcrProviderTests.cs`
+- FS-006 phase-3 OCR policy/runtime wiring increment:
+  - `dotnet/src/DoclingDotNet/Ocr/DoclingOcrProviderContracts.cs`
+  - `dotnet/src/DoclingDotNet/Pipeline/DoclingPdfConversionRunner.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingPdfConversionRunnerSemanticsTests.cs`
+- FS-006 phase-4 OCR parity coverage increment:
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityComparer.cs`
+  - `dotnet/tools/DoclingParityHarness/Program.cs`
+  - `scripts/run-docling-parity-harness.ps1`
+  - `.github/workflows/slice0-ci.yml`
+  - `dotnet/tests/DoclingDotNet.Tests/SegmentedParityComparerTests.cs`
+- FS-001 parity depth increment (geometry signal hardening):
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityTypes.cs`
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityComparer.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/SegmentedParityComparerTests.cs`
+- FS-001 parity harness geometry severity runtime controls:
+  - `dotnet/tools/DoclingParityHarness/Program.cs`
+  - `scripts/run-docling-parity-harness.ps1`
+  - `.github/workflows/slice0-ci.yml`
+  - `docs/03_Execution/Validation_and_Commands.md`
+- FS-001 CI strict geometry telemetry lane:
+  - `.github/workflows/slice0-ci.yml`
+  - `docs/03_Execution/Validation_and_Commands.md`
+- FS-001 Linux strict parity telemetry lane:
+  - `.github/workflows/slice0-ci.yml`
+  - `scripts/run-docling-parity-harness.ps1`
+  - `docs/03_Execution/Validation_and_Commands.md`
+- FS-001 Linux baseline parity telemetry lane:
+  - `.github/workflows/slice0-ci.yml`
+  - `docs/03_Execution/Validation_and_Commands.md`
+- FS-001 parity depth increment for non-text context signatures:
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityComparer.cs`
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityTypes.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/SegmentedParityComparerTests.cs`
+  - `docs/04_Assessment/Story_Verification.md`
+- FS-001 parity depth increment for non-text context field-level semantics:
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityComparer.cs`
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityTypes.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/SegmentedParityComparerTests.cs`
+  - `dotnet/tools/DoclingParityHarness/Program.cs`
+  - `scripts/run-docling-parity-harness.ps1`
+  - `docs/03_Execution/Validation_and_Commands.md`
+  - `docs/04_Assessment/Story_Verification.md`
+- FS-001 parity depth increment for text field-level semantics:
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityComparer.cs`
+  - `dotnet/src/DoclingDotNet/Parity/SegmentedParityTypes.cs`
+  - `dotnet/tests/DoclingDotNet.Tests/SegmentedParityComparerTests.cs`
+  - `dotnet/tools/DoclingParityHarness/Program.cs`
+  - `scripts/run-docling-parity-harness.ps1`
+  - `docs/03_Execution/Vertical_Slices.md`
+  - `docs/04_Assessment/Story_Verification.md`
+- FS-001 Linux baseline parity gate promotion:
+  - `.github/workflows/slice0-ci.yml`
+  - `docs/03_Execution/Validation_and_Commands.md`
+  - `docs/01_Context/Current_State.md`
+  - `docs/03_Execution/Vertical_Slices.md`
+  - `docs/04_Assessment/Story_Verification.md`
+  - `docs/06_Backlog/Future_Stories.md`
+- Upstream upgrade hardening workflow:
+  - `scripts/fetch-latest-and-port-docling-parse.ps1`
+  - `scripts/update-docling-parse-upstream-baseline.ps1`
+  - `patches/docling-parse/upstream-baseline.json`
+  - `docs/05_Operations/Upstream_Upgrade_Workflow.md`
+  - `.agent/skills/docling-upstream-upgrade/SKILL.md`
+- Slice 1 DTO contract implementation:
+  - `dotnet/src/DoclingDotNet/Models/SegmentedPdfPageDto.cs`
+  - `dotnet/src/DoclingDotNet/Models/NativeDecodedPageDto.cs`
+  - `dotnet/src/DoclingDotNet/Projection/NativeDecodedPageProjector.cs`
+  - `dotnet/src/DoclingDotNet/Serialization/DoclingJson.cs`
+- `DoclingParseSession` wrapper added:
+  - `dotnet/src/DoclingDotNet/Parsing/DoclingParseSession.cs`
+- Slice 1 DTO contract tests:
+  - `dotnet/tests/DoclingDotNet.Tests/DoclingDotNet.Tests.csproj`
+  - `dotnet/tests/DoclingDotNet.Tests/SegmentedPdfPageDtoContractTests.cs`
+- Parity comparer tests:
+  - `dotnet/tests/DoclingDotNet.Tests/SegmentedParityComparerTests.cs`
+- Upstream delta patch tracking for ignored `upstream/**` changes:
+  - `patches/docling-parse/0001-docling-parse-cabi-foundation-and-segmented-runtime.patch`
+  - `patches/docling-parse/README.md`
+  - `scripts/export-docling-parse-upstream-delta.ps1`
+  - `scripts/apply-docling-parse-upstream-delta.ps1`
+- Story verification record:
+  - `docs/04_Assessment/Story_Verification.md`
+- Upstream Python Docling drift analysis workflow:
+  - `scripts/update-docling-upstream-baseline.ps1`
+  - `scripts/report-docling-upstream-delta.ps1`
+  - `patches/docling/upstream-baseline.json`
+  - `patches/docling/README.md`
+  - `docs/05_Operations/Docling_Upstream_Delta_Workflow.md`
+- Parity mechanism source-of-truth doc:
+  - `docs/03_Execution/Parity_Mechanism.md`
+- Root repository README:
+  - `README.md`
+- Lean iteration logging skill:
+  - `.agent/skills/lean-iteration-logging/SKILL.md`
+
+### Changed
+- `dotnet/src/DoclingDotNet/DoclingParseAbi.cs` now mirrors full C ABI declarations from `docling_parse_c_api.h`.
+- `dotnet/DoclingDotNet.slnx` now includes `/tests` and `/tools` project folders.
+- `dotnet/src/DoclingDotNet/Parsing/DoclingParseSession.cs` public API no longer leaks internal native config type.
+- Backlog/docs updated with FS-005 initial implementation status and shifted remaining risk to corpus-level parity harness.
+- `.github/workflows/slice0-ci.yml` now runs FS-001 baseline parity harness and uploads parity report artifact (`parity-report-win-x64`) in addition to Slice 0 artifact packaging.
+- Backlog/docs updated with FS-004 initial implementation status and remaining integration scope.
+- `DoclingParseSession` now implements `IDoclingParseSession` for orchestration/testability.
+- FS-004 now supports terminal cleanup stages and stage-level telemetry (`TimestampUtc`, `Duration`, skipped-stage events).
+- FS-004 now exposes explicit per-stage status/error/timing contracts via `PipelineRunResult.StageResults`.
+- FS-004 runner now supports partial decode controls (`MaxPages`, `ContinueOnPageDecodeError`), explicit `transform_pages` stage, and contextual decode failure contracts (`PdfPageDecodeException`, `PageErrors`).
+- FS-004 runner now supports optional context extraction stages (`extract_annotations`, `extract_table_of_contents`, `extract_meta_xml`) and context payload result fields.
+- FS-004 runner now emits structured machine-readable diagnostics (`PdfConversionDiagnostic`) and handles transform/extraction null/empty/throw edge cases with contextual exceptions.
+- FS-004 runner now supports multi-document orchestration (`ExecuteBatchAsync`) and deterministic artifact bundles (`manifest` + per-document artifacts).
+- FS-004 runner now supports artifact bundle persistence/export controls (`ArtifactOutputDirectory`, `CleanArtifactOutputDirectory`, `PersistedArtifactDirectory`) and typed cross-document aggregation summaries (`PdfBatchAggregationSummary`), including manifest aggregation payload.
+- FS-004 runner now includes optional OCR fallback stage orchestration (`apply_ocr_fallback`) using pluggable OCR provider contracts with deterministic provider selection, required-success behavior, and preference override support.
+- Upgrade workflow now supports one-command execution for "fetch latest and port changes over", including baseline commit/hash tracking.
+- Upgrade workflow hardening:
+  - adds `-DryRun` preflight mode to `scripts/fetch-latest-and-port-docling-parse.ps1`
+  - fails fast on empty exported patch unless `-AllowEmptyPatch` is provided
+  - uses current PowerShell host path for internal script invocations.
+- FS-001 geometry signature parity drift now defaults to `Minor` severity with configurable override (`GeometryMismatchSeverity`) for stricter lanes.
+- FS-001 harness/report now captures and accepts geometry mismatch severity (`--geometry-mismatch-severity` / `-GeometryMismatchSeverity`) to support baseline and strict parity lanes without code edits.
+- Slice 0 CI parity workflow now runs:
+  - blocking baseline lane (`GeometryMismatchSeverity=Minor`)
+  - non-blocking strict geometry lane (`GeometryMismatchSeverity=Major`, `continue-on-error`)
+  - parity artifact upload from `.artifacts/parity` (baseline + strict reports).
+- `scripts/run-docling-parity-harness.ps1` now has cross-platform runtime path handling:
+  - platform-correct `PATH` separator usage
+  - native library directory auto-discovery under `build-cabi`
+  - portable path construction and `Start-Process` usage
+- Slice 0 CI now includes `ubuntu-latest` parity telemetry lanes (`continue-on-error`) with dedicated artifact upload:
+  - baseline (`GeometryMismatchSeverity=Minor`)
+  - strict (`GeometryMismatchSeverity=Major`)
+- Slice 0 Linux parity flow now runs as:
+  - blocking baseline gate (`GeometryMismatchSeverity=Minor`)
+  - non-blocking strict telemetry (`GeometryMismatchSeverity=Major`)
+  - artifact renamed to `parity-report-linux`.
+- FS-001 non-text context parity signature drift now defaults to `Minor` severity with configurable override (`ContextMismatchSeverity`) so additional semantic depth can be observed without breaking baseline major gates.
+- FS-001 non-text context parity now includes field-level semantic drift signals (distribution/presence/mean checks) with configurable runtime severity (`--context-mismatch-severity` / `-ContextMismatchSeverity`).
+- FS-001 text parity now includes field-level semantic drift signals (text-direction/rendering-mode distributions + widget/presence/equality counts) with configurable runtime severity (`--text-mismatch-severity` / `-TextMismatchSeverity`).
+- FS-001 text parity now includes order-sensitive text semantic sequence drift checks (`index|text|orig|text_direction|rendering_mode|widget`) via `text_semantic_sequence_mismatch`.
+- Documentation navigation now links parity behavior/process centrally:
+  - `docs/00_Index/Map_of_Content.md`
+  - `docs/README.md`
+  - `docs/03_Execution/Validation_and_Commands.md`
+  - `docs/05_Operations/Working_Agreements.md`
+  - `docs/01_Context/Project_Overview.md`
+  - `AGENTS.md`
+- Root README now points directly to the parity mechanism source-of-truth doc and core parity validation command.
+- Documentation process now defaults to concise per-iteration summaries in `docs/05_Operations/Progress/progress.md`, with targeted `docs/` + `docs/CHANGELOG.md` updates only for milestone or contract/workflow changes.
+- `scripts/run-docling-parity-harness.ps1` now resolves native runtime directories before invocation (fixes wrapper execution ordering bug where `Resolve-NativeRuntimeDirectories` could be unresolved at runtime).
+- Baseline parity gate defaults now focus on ported-behavior verification in runner/CI/docs:
+  - baseline lanes use `TextMismatchSeverity=Minor`, `GeometryMismatchSeverity=Minor`, `ContextMismatchSeverity=Minor`
+  - strict telemetry lanes keep `Text/Geometry/Context=Major` in non-blocking mode.
+
+### Verified
+- `dotnet build dotnet/DoclingDotNet.slnx --configuration Release` passes.
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (31 tests).
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (35 tests).
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (40 tests).
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (41 tests).
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (42 tests).
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (47 tests).
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (52 tests).
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (56 tests).
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (58 tests).
+- `dotnet test dotnet/DoclingDotNet.slnx --configuration Release` passes (59 tests).
+- `dotnet build dotnet/DoclingDotNet.Examples.slnx --configuration Release` passes.
+- `powershell -ExecutionPolicy Bypass -File .\scripts\test-docling-parse-cabi-smoke.ps1 -SkipConfigure` passes.
+- `powershell -ExecutionPolicy Bypass -File .\scripts\run-docling-parity-harness.ps1 -SkipConfigure -Output .artifacts/parity/docling-parse-parity-report.json --max-pages 20` passes.
+- `powershell -ExecutionPolicy Bypass -File .\scripts\run-docling-parity-harness.ps1 -SkipConfigure -Output .artifacts/parity/docling-parse-parity-report.json -MaxOcrDrift 0 --max-pages 20` passes.
+- parity summary before non-text context signature checks reported `critical=0`, `major=0`, `minor=6`, `ocr_drift=0`.
+- parity summary currently reports `critical=0`, `major=0`, `minor=15`, `ocr_drift=0` after non-text context signature checks were added.
+- parity summary currently reports `critical=0`, `major=0`, `minor=25`, `ocr_drift=0` after non-text context field-level semantic checks were added.
+- strict geometry lane run (`-GeometryMismatchSeverity Major`) currently exceeds threshold (`major=6`) and is treated as expected non-blocking telemetry in CI.
+- `powershell -ExecutionPolicy Bypass -File .\scripts\apply-docling-parse-upstream-delta.ps1 -CheckOnly` passes (already-applied check).
+- `powershell -ExecutionPolicy Bypass -File .\scripts\fetch-latest-and-port-docling-parse.ps1 -TargetRef HEAD -SkipFetch -SkipValidation` passes (workflow preflight + in-place apply path).
+- `powershell -ExecutionPolicy Bypass -File .\scripts\fetch-latest-and-port-docling-parse.ps1 -TargetRef HEAD -SkipFetch -DryRun` passes (preflight-only safety path).
+- `powershell -ExecutionPolicy Bypass -File .\scripts\report-docling-upstream-delta.ps1 -SkipFetch` passes (baseline-to-target delta artifact generation).
+
+## [2026-02-20]
+### Added
+- Slice 0 CI workflow:
+  - `.github/workflows/slice0-ci.yml`
+- C ABI artifact packaging script with manifest output:
+  - `scripts/package-docling-parse-cabi-artifacts.ps1`
+- `.gitignore` for root repository tracking policy.
+- `dotnet/` workspace:
+  - `dotnet/DoclingDotNet.slnx`
+  - `dotnet/src/DoclingDotNet/DoclingDotNet.csproj`
+  - `dotnet/src/DoclingDotNet/DoclingParseAbi.cs`
+  - `dotnet/README.md`
+- `upstream/README.md` to document isolated upstream clone boundaries.
+- Root `docs/` Obsidian vault with structure for context, architecture, execution, assessment, operations, and backlog.
+- Assessment detail pages:
+  - `docs/04_Assessment/Native_Surfaces.md`
+  - `docs/04_Assessment/Complexity_Hotspots.md`
+- Local skills pack under `.agent/skills`:
+  - `debug-loop-breaker`
+  - `native-process-wrapper`
+  - `hung-run-recovery`
+  - `vertical-slice-gate`
+  - `docs-vault-maintainer`
+- Slice 0 smoke automation and assertions:
+  - `scripts/run-docling-parse-cabi-smoke.ps1`
+  - `scripts/test-docling-parse-cabi-smoke.ps1`
+  - `scripts/clean-workspace.ps1`
+- Future parity story tracking:
+  - `docs/06_Backlog/Future_Stories.md`
+
+### Changed
+- Repository structure isolation:
+  - moved cloned upstream code under `upstream/` (`upstream/docling`, `upstream/deps`)
+  - updated scripts/spikes/docs references from `deps/...` to `upstream/deps/...`
+- Execution docs and spike guide updated with CI + artifact packaging flow.
+- `AGENTS.md` updated with bottom-up priority ladder, validation checklist, and explicit instructions for determining completed work and selecting next work.
+- `docs/05_Operations/Working_Agreements.md` updated with status/planning source-of-truth guidance.
+- `docs/README.md` updated with smoke test and cleanup command references.
+
+### Verified
+- `powershell -ExecutionPolicy Bypass -File .\scripts\test-docling-parse-cabi-smoke.ps1 -SkipConfigure` passes.

@@ -1,0 +1,1573 @@
+﻿diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6f4fd37..683c9f3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -74,8 +74,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+ if (WIN32)
+     set(TEST_PATH "\\\"${TOPLEVEL_PREFIX_PATH}\\\"")
+-    add_definitions(-DROOT_PATH="\\\"${TOPLEVEL_PREFIX_PATH}\\\"")
+-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-sign-compare -O3 ${ENV_ARCHFLAGS}")
++    add_definitions(-DROOT_PATH="\\\"${TOPLEVEL_PREFIX_PATH}\\\"" -D_USE_MATH_DEFINES)
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O2 /utf-8 ${ENV_ARCHFLAGS}")
+ else()
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-sign-compare -O3 -DROOT_PATH='\"${TOPLEVEL_PREFIX_PATH}\"' ${ENV_ARCHFLAGS}")
+ endif()
+@@ -89,6 +89,8 @@ message(STATUS "cxx-standard: " ${CMAKE_CXX_STANDARD})
+ # ************************
+ 
+ option(USE_SYSTEM_DEPS OFF "If enabled, the build will find and link to system dependencies, otherwise they are sourced from the original repos and compiled on the fly.")
++option(DOCLING_PARSE_BUILD_PYTHON_BINDINGS ON "Build pybind11 Python extension module.")
++option(DOCLING_PARSE_BUILD_C_API ON "Build C ABI shared library for non-Python interop (e.g. .NET P/Invoke).")
+ 
+ # prepare setup for building external packages
+ if(NOT USE_SYSTEM_DEPS)
+@@ -106,12 +108,13 @@ include(cmake/extlib_cxxopts.cmake)
+ include(cmake/extlib_loguru.cmake)
+ include(cmake/extlib_json.cmake)
+ include(cmake/extlib_utf8.git.cmake)
++include(cmake/extlib_zlib.cmake)
+ include(cmake/extlib_jpeg.cmake)
+ # include(cmake/extlib_qpdf_v11.cmake)
+ include(cmake/extlib_qpdf_v12.cmake)
+ 
+ # aggregate the targets created by the dependencies
+-set(DEPENDENCIES qpdf jpeg utf8 json loguru cxxopts)
++set(DEPENDENCIES qpdf jpeg zlib utf8 json loguru cxxopts)
+ 
+ # ************************
+ # *** libraries        ***
+@@ -181,32 +184,53 @@ set_target_properties(parse PROPERTIES POSITION_INDEPENDENT_CODE ON)
+ 
+ target_link_libraries(parse ${DEPENDENCIES} ${LIB_LINK})
+ 
++# ***************************
++# ***  C ABI binding      ***
++# ***************************
++
++if(DOCLING_PARSE_BUILD_C_API)
++    add_library(docling_parse_c SHARED "${TOPLEVEL_PREFIX_PATH}/src/c_api/docling_parse_c_api.cpp")
++
++    add_dependencies(docling_parse_c ${DEPENDENCIES})
++    target_include_directories(docling_parse_c INTERFACE ${DEPENDENCIES})
++    target_compile_definitions(docling_parse_c PRIVATE DOCLING_PARSE_C_API_EXPORTS=1)
++    target_link_libraries(docling_parse_c ${DEPENDENCIES} ${LIB_LINK})
++
++    install(TARGETS docling_parse_c DESTINATION "${TOPLEVEL_PREFIX_PATH}/docling_parse")
++    install(FILES "${TOPLEVEL_PREFIX_PATH}/src/c_api/docling_parse_c_api.h"
++            DESTINATION "${TOPLEVEL_PREFIX_PATH}/docling_parse/include")
++endif()
++
+ # ***************************
+ # ***  Python-binding     ***
+ # ***************************
+ 
+-# https://pybind11.readthedocs.io/en/stable/compiling.html
+-# https://pybind11.readthedocs.io/en/stable/compiling.html#configuration-variables
+-find_package(pybind11 CONFIG REQUIRED)
++if(DOCLING_PARSE_BUILD_PYTHON_BINDINGS)
++    # https://pybind11.readthedocs.io/en/stable/compiling.html
++    # https://pybind11.readthedocs.io/en/stable/compiling.html#configuration-variables
++    find_package(pybind11 CONFIG REQUIRED)
+ 
+-#pybind11_add_module(docling_parse "${TOPLEVEL_PREFIX_PATH}/app/pybind_parse.cpp")
+-pybind11_add_module(pdf_parsers "${TOPLEVEL_PREFIX_PATH}/app/pybind_parse.cpp")
++    #pybind11_add_module(docling_parse "${TOPLEVEL_PREFIX_PATH}/app/pybind_parse.cpp")
++    pybind11_add_module(pdf_parsers "${TOPLEVEL_PREFIX_PATH}/app/pybind_parse.cpp")
+ 
+-#add_dependencies(docling_parse parse)
+-add_dependencies(pdf_parsers parse)
++    #add_dependencies(docling_parse parse)
++    add_dependencies(pdf_parsers parse)
+ 
+-#target_include_directories(docling_parse INTERFACE ${DEPENDENCIES})
+-target_include_directories(pdf_parsers INTERFACE ${DEPENDENCIES})
++    #target_include_directories(docling_parse INTERFACE ${DEPENDENCIES})
++    target_include_directories(pdf_parsers INTERFACE ${DEPENDENCIES})
+ 
+-#target_compile_definitions(docling_parse PRIVATE VERSION_INFO=${CMAKE_PROJECT_VERSION})
+-target_compile_definitions(pdf_parsers PRIVATE VERSION_INFO=${CMAKE_PROJECT_VERSION})
++    #target_compile_definitions(docling_parse PRIVATE VERSION_INFO=${CMAKE_PROJECT_VERSION})
++    target_compile_definitions(pdf_parsers PRIVATE VERSION_INFO=${CMAKE_PROJECT_VERSION})
+ 
+-#target_link_libraries(docling_parse PRIVATE parse)
+-target_link_libraries(pdf_parsers PRIVATE parse)
++    #target_link_libraries(docling_parse PRIVATE parse)
++    target_link_libraries(pdf_parsers PRIVATE parse)
++endif()
+ 
+ # *****************
+ # ***  Install  ***
+ # *****************
+ 
+ #install(TARGETS docling_parse DESTINATION "${TOPLEVEL_PREFIX_PATH}/docling_parse")
+-install(TARGETS pdf_parsers DESTINATION "${TOPLEVEL_PREFIX_PATH}/docling_parse")
++if(DOCLING_PARSE_BUILD_PYTHON_BINDINGS)
++    install(TARGETS pdf_parsers DESTINATION "${TOPLEVEL_PREFIX_PATH}/docling_parse")
++endif()
+diff --git a/README.md b/README.md
+index 2700a48..58cf2d1 100644
+--- a/README.md
++++ b/README.md
+@@ -136,6 +136,10 @@ Usage:
+ 
+ If you don't have an input file, a template input file will be printed on the terminal.
+ 
++### C ABI (non-Python interop)
++
++For .NET / P/Invoke and other FFI runtimes, see `docs/c_abi.md`.
++
+ 
+ ### Python
+ 
+diff --git a/cmake/extlib_jpeg.cmake b/cmake/extlib_jpeg.cmake
+index 2f3f114..9631bcc 100644
+--- a/cmake/extlib_jpeg.cmake
++++ b/cmake/extlib_jpeg.cmake
+@@ -44,10 +44,16 @@ else()
+         # LOG_BUILD ON
+     )
+ 
++    if(WIN32)
++        set(JPEG_LIB ${EXTERNALS_PREFIX_PATH}/lib/jpeg.lib)
++    else()
++        set(JPEG_LIB ${EXTERNALS_PREFIX_PATH}/lib/libjpeg.a)
++    endif()
++
+     add_library(${ext_name} STATIC IMPORTED)
+     add_dependencies(${ext_name} extlib_jpeg)
+     set_target_properties(${ext_name} PROPERTIES
+-        IMPORTED_LOCATION ${EXTERNALS_PREFIX_PATH}/lib/libjpeg.a
++        IMPORTED_LOCATION ${JPEG_LIB}
+         INTERFACE_INCLUDE_DIRECTORIES ${EXTERNALS_PREFIX_PATH}/include
+     )
+ 
+diff --git a/cmake/extlib_qpdf_v12.cmake b/cmake/extlib_qpdf_v12.cmake
+index 81fb15a..0b9aaff 100644
+--- a/cmake/extlib_qpdf_v12.cmake
++++ b/cmake/extlib_qpdf_v12.cmake
+@@ -20,8 +20,15 @@ else()
+   set(QPDF_URL https://github.com/qpdf/qpdf.git)
+   
+   set(QPDF_TAG v12.2.0 )
+-  set(QPDF_LIB ${EXTERNALS_PREFIX_PATH}/lib/libqpdf.a)
+-  set(JPEG_LIB ${EXTERNALS_PREFIX_PATH}/lib/libjpeg.a)
++  if(WIN32)
++      set(QPDF_LIB ${EXTERNALS_PREFIX_PATH}/lib/qpdf.lib)
++      set(ZLIB_LIB ${EXTERNALS_PREFIX_PATH}/lib/zlibstatic.lib)
++      set(JPEG_LIB ${EXTERNALS_PREFIX_PATH}/lib/jpeg.lib)
++  else()
++      set(QPDF_LIB ${EXTERNALS_PREFIX_PATH}/lib/libqpdf.a)
++      set(ZLIB_LIB ${EXTERNALS_PREFIX_PATH}/lib/libz.a)
++      set(JPEG_LIB ${EXTERNALS_PREFIX_PATH}/lib/libjpeg.a)
++  endif()
+ 
+   if(UNIX)
+       set(QPDF_EXTRA_CXX_FLAGS "-fPIC ")
+@@ -41,7 +48,7 @@ else()
+ 
+       PREFIX extlib_qpdf
+ 
+-      DEPENDS extlib_jpeg
++      DEPENDS extlib_jpeg extlib_zlib
+ 
+       UPDATE_COMMAND ""
+ 
+@@ -72,6 +79,9 @@ else()
+       -Dpc_libjpeg_LIBDIR=${EXTERNALS_PREFIX_PATH}/lib \\ 
+       -Dpc_libjpeg_H_PATH=${EXTERNALS_PREFIX_PATH}/include \\ 
+       -Dpc_libjpeg_INCLUDEDIR=${EXTERNALS_PREFIX_PATH}/include \\ 
++      -DZLIB_LIBRARY=${ZLIB_LIB} \\
++      -DZLIB_INCLUDE_DIR=${EXTERNALS_PREFIX_PATH}/include \\
++      -DCMAKE_PREFIX_PATH=${EXTERNALS_PREFIX_PATH} \\
+       -DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES} \\ 
+       -DINSTALL_EXAMPLES=OFF \\ 
+       -DBUILD_DOC_DIST=OFF \\ 
+@@ -90,7 +100,7 @@ else()
+   file(MAKE_DIRECTORY ${EXT_INCLUDE_DIRS})
+   set_target_properties(${ext_name} PROPERTIES
+     IMPORTED_LOCATION ${QPDF_LIB}
+-    INTERFACE_LINK_LIBRARIES ${JPEG_LIB}
++    INTERFACE_LINK_LIBRARIES "${JPEG_LIB};${ZLIB_LIB}"
+     INTERFACE_LINK_DIRECTORIES ${EXTERNALS_PREFIX_PATH}/lib
+     INTERFACE_INCLUDE_DIRECTORIES ${EXT_INCLUDE_DIRS}
+   )
+diff --git a/cmake/os_opts.cmake b/cmake/os_opts.cmake
+index f4dc9a5..653022a 100644
+--- a/cmake/os_opts.cmake
++++ b/cmake/os_opts.cmake
+@@ -1,39 +1,28 @@
+-
+ message(STATUS "entering in 'os_opts.cmake'")
+ 
+-if(WIN32)
+-   message(STATUS "compiling on windows")
+-
+-   # set(LIB_LINK qpdf jpeg utf8 z)
+-   find_package(ZLIB)
++set(OS_DEPENDENCIES)
++set(LIB_LINK)
+ 
+-   set(LIB_LINK)
+-   set(OS_DEPENDENCIES ZLIB::ZLIB)
++find_package(ZLIB)
++if(TARGET ZLIB::ZLIB)
++    list(APPEND OS_DEPENDENCIES ZLIB::ZLIB)
++elseif(ZLIB_FOUND AND ZLIB_LIBRARIES)
++    list(APPEND LIB_LINK ${ZLIB_LIBRARIES})
++else()
++    message(WARNING "ZLIB not found as imported target; proceeding without explicit ZLIB linkage.")
++endif()
+ 
++if(WIN32)
++    message(STATUS "compiling on windows")
+ elseif(APPLE)
+-   message(STATUS "compiling on mac-osx")
++    message(STATUS "compiling on mac-osx")
+ 
+-   #set(CMAKE_MACOSX_RPATH 1)
++    find_library(FoundationLib Foundation)
++    find_library(SystemConfigurationLib SystemConfiguration)
+ 
+-   find_library(FoundationLib Foundation)
+-   find_package(ZLIB)
+-   #message("LIB: ${FoundationLib}")
+-
+-   find_library(SystemConfigurationLib SystemConfiguration)
+-   #message("LIB: ${SystemConfigurationLib}")
+-
+-   # set(LIB_LINK qpdf jpeg utf8 z)	
+-   set(OS_DEPENDENCIES ZLIB::ZLIB)
+-
+-
+-   set(LIB_LINK ${FoundationLib} ${SystemConfigurationLib})
+-   
++    list(APPEND LIB_LINK ${FoundationLib} ${SystemConfigurationLib})
+ elseif(UNIX)
+-   message(STATUS "compiling on linux")
+-
+-   # set(LIB_LINK qpdf jpeg utf8 z)
+-   find_package(ZLIB)
+-   set(LIB_LINK dl m pthread rt resolv)
+-   set(OS_DEPENDENCIES ZLIB::ZLIB)
++    message(STATUS "compiling on linux")
+ 
++    list(APPEND LIB_LINK dl m pthread rt resolv)
+ endif()
+
+diff --git a/cmake/extlib_zlib.cmake b/cmake/extlib_zlib.cmake
+new file mode 100644
+index 0000000..30f4ec2
+--- /dev/null
++++ b/cmake/extlib_zlib.cmake
+@@ -0,0 +1,60 @@
++message(STATUS "entering in extlib_zlib.cmake")
++
++set(ext_name "zlib")
++
++if(USE_SYSTEM_DEPS)
++    find_package(ZLIB REQUIRED)
++
++    if(TARGET ZLIB::ZLIB)
++        add_library(${ext_name} ALIAS ZLIB::ZLIB)
++    else()
++        add_library(${ext_name} INTERFACE IMPORTED)
++        set_target_properties(${ext_name} PROPERTIES
++            INTERFACE_LINK_LIBRARIES "${ZLIB_LIBRARIES}"
++            INTERFACE_INCLUDE_DIRECTORIES "${ZLIB_INCLUDE_DIRS}")
++    endif()
++else()
++    include(ExternalProject)
++    include(CMakeParseArguments)
++
++    set(ZLIB_URL https://github.com/madler/zlib.git)
++    set(ZLIB_TAG v1.3.1)
++
++    ExternalProject_Add(extlib_zlib
++
++        PREFIX extlib_zlib
++
++        UPDATE_COMMAND ""
++        GIT_REPOSITORY ${ZLIB_URL}
++        GIT_TAG ${ZLIB_TAG}
++
++        BUILD_ALWAYS OFF
++
++        INSTALL_DIR ${EXTERNALS_PREFIX_PATH}
++
++        CMAKE_ARGS \\
++        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \\
++        -DBUILD_SHARED_LIBS=OFF \\
++        -DCMAKE_INSTALL_LIBDIR=${EXTERNALS_PREFIX_PATH}/lib \\
++        -DCMAKE_INSTALL_PREFIX=${EXTERNALS_PREFIX_PATH}
++
++        LOG_DOWNLOAD ON
++    )
++
++    if(WIN32)
++        set(ZLIB_LIB ${EXTERNALS_PREFIX_PATH}/lib/zlibstatic.lib)
++    else()
++        set(ZLIB_LIB ${EXTERNALS_PREFIX_PATH}/lib/libz.a)
++    endif()
++
++    add_library(${ext_name} STATIC IMPORTED)
++    add_dependencies(${ext_name} extlib_zlib)
++
++    # Keep include path available at configure time for imported target metadata.
++    file(MAKE_DIRECTORY ${EXTERNALS_PREFIX_PATH}/include)
++
++    set_target_properties(${ext_name} PROPERTIES
++        IMPORTED_LOCATION ${ZLIB_LIB}
++        INTERFACE_INCLUDE_DIRECTORIES ${EXTERNALS_PREFIX_PATH}/include
++    )
++endif()
+
+diff --git a/docs/c_abi.md b/docs/c_abi.md
+new file mode 100644
+index 0000000..a27ce21
+--- /dev/null
++++ b/docs/c_abi.md
+@@ -0,0 +1,81 @@
++# C ABI for .NET and Other FFI Consumers
++
++`docling-parse` now includes an optional C ABI layer that wraps the native parser without Python.
++
++## Why this exists
++
++The core parser is C++, while the existing public integration is `pybind11` (`PYBIND11_MODULE`).  
++For .NET (and other non-Python runtimes), a stable C ABI is the clean interop surface.
++
++## Build
++
++```sh
++cmake -S . -B build-cabi \
++  -DDOCLING_PARSE_BUILD_C_API=ON \
++  -DDOCLING_PARSE_BUILD_PYTHON_BINDINGS=OFF
++
++cmake --build build-cabi --config Release --target docling_parse_c
++```
++
++This avoids any `pybind11`/Python build dependency.
++
++## Header
++
++C ABI definitions are in:
++
++`src/c_api/docling_parse_c_api.h`
++
++## Core API shape
++
++- ABI/version introspection:
++  - `docling_parse_get_abi_version`
++  - `docling_parse_get_decode_page_config_size`
++  - `docling_parse_init_decode_page_config`
++- Opaque handle lifecycle:
++  - `docling_parse_create`
++  - `docling_parse_destroy`
++- Runtime configuration:
++  - `docling_parse_set_loglevel`
++  - `docling_parse_set_resources_dir`
++- Document load/unload:
++  - `docling_parse_load_document`
++  - `docling_parse_load_document_from_bytes`
++  - `docling_parse_unload_document`
++  - `docling_parse_unload_documents`
++- Queries and extraction:
++  - `docling_parse_number_of_pages`
++  - `docling_parse_get_annotations_json`
++  - `docling_parse_get_table_of_contents_json`
++  - `docling_parse_get_meta_xml_json`
++  - `docling_parse_decode_page_json`
++  - `docling_parse_decode_segmented_page_json`
++- Memory/error utilities:
++  - `docling_parse_free_string`
++  - `docling_parse_get_last_error`
++
++## Memory contract
++
++- Functions returning strings allocate UTF-8 buffers in native code.
++- Caller must release with `docling_parse_free_string`.
++
++## ABI compatibility contract
++
++- Current ABI version: `1.1.0` (`DOCLING_PARSE_C_ABI_VERSION_*` macros).
++- Consumers should call `docling_parse_get_abi_version` and validate at least the major version before use.
++- Consumers should call `docling_parse_get_decode_page_config_size` and pass that size into `docling_parse_init_decode_page_config`.
++- `docling_parse_get_default_decode_page_config` remains available for backward compatibility, but new consumers should prefer `docling_parse_init_decode_page_config`.
++
++## Status contract
++
++All API calls return integer status codes (`docling_parse_status_code`):
++
++- `0`: success
++- `1`: invalid argument
++- `2`: not found
++- `3`: operation failed
++- `4`: internal error
++
++## Threading and error strings
++
++- `docling_parse_handle` is not guaranteed thread-safe; treat each handle as single-threaded unless you add your own synchronization.
++- `docling_parse_get_last_error` returns an internal string owned by the handle. It remains valid until the next API call on that handle.
+
+diff --git a/src/c_api/docling_parse_c_api.cpp b/src/c_api/docling_parse_c_api.cpp
+new file mode 100644
+index 0000000..7b8965c
+--- /dev/null
++++ b/src/c_api/docling_parse_c_api.cpp
+@@ -0,0 +1,1010 @@
++//-*-C++-*-
++
++#include <c_api/docling_parse_c_api.h>
++
++#include <cmath>
++#include <cstring>
++#include <filesystem>
++#include <optional>
++#include <string>
++#include <unordered_map>
++#include <vector>
++
++#ifdef _WIN32
++#include <codecvt>
++#include <locale>
++#endif
++
++#include <parse.h>
++
++using document_decoder = pdflib::pdf_decoder<pdflib::DOCUMENT>;
++using document_decoder_ptr = std::shared_ptr<document_decoder>;
++
++struct parser_state {
++  std::unordered_map<std::string, document_decoder_ptr> key2doc;
++  std::string last_error;
++};
++
++struct docling_parse_handle {
++  parser_state state;
++};
++
++namespace {
++
++void ensure_loguru_initialized() {
++  static std::once_flag once;
++  std::call_once(once, []() {
++    static char arg0[] = "docling_parse_c";
++    char* argv[] = {arg0, nullptr};
++    int argc = 1;
++    loguru::init(argc, argv);
++  });
++}
++
++void set_loglevel_with_label(const std::string& level) {
++  if (level == "info") {
++    loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
++  } else if (level == "warning" || level == "warn") {
++    loguru::g_stderr_verbosity = loguru::Verbosity_WARNING;
++  } else if (level == "error") {
++    loguru::g_stderr_verbosity = loguru::Verbosity_ERROR;
++  } else if (level == "fatal") {
++    loguru::g_stderr_verbosity = loguru::Verbosity_FATAL;
++  } else {
++    loguru::g_stderr_verbosity = loguru::Verbosity_ERROR;
++  }
++}
++
++char* copy_to_c_string(const std::string& value) {
++  auto* result = static_cast<char*>(std::malloc(value.size() + 1));
++  if (result == nullptr) {
++    return nullptr;
++  }
++
++  std::memcpy(result, value.c_str(), value.size() + 1);
++  return result;
++}
++
++std::string null_to_empty(const char* value) {
++  return value == nullptr ? std::string() : std::string(value);
++}
++
++bool is_null_or_empty(const char* value) {
++  return value == nullptr || value[0] == '\0';
++}
++
++int to_bool(int value) {
++  return value != 0;
++}
++
++void set_last_error(docling_parse_handle* handle, const std::string& message) {
++  if (handle != nullptr) {
++    handle->state.last_error = message;
++  }
++}
++
++void clear_last_error(docling_parse_handle* handle) {
++  if (handle != nullptr) {
++    handle->state.last_error.clear();
++  }
++}
++
++int fail(docling_parse_handle* handle, int code, const std::string& message) {
++  set_last_error(handle, message);
++  return code;
++}
++
++bool initialise_font_resources(std::string* error_message = nullptr) {
++  try {
++    auto resource_dir_path = resource_utils::get_resources_dir(false);
++    auto resource_dir = resource_dir_path.string();
++    if (!std::filesystem::exists(resource_dir_path)) {
++      if (error_message != nullptr) {
++        *error_message = "pdf resources directory does not exist: " + resource_dir;
++      }
++      return false;
++    }
++
++    auto resource_dir_key = pdflib::pdf_resource<pdflib::PAGE_FONT>::RESOURCE_DIR_KEY;
++
++    nlohmann::json data = nlohmann::json::object();
++    data[resource_dir_key] = resource_dir;
++
++    std::unordered_map<std::string, double> timings;
++    pdflib::pdf_resource<pdflib::PAGE_FONT>::initialise(data, timings);
++
++    return true;
++  } catch (const std::exception& ex) {
++    if (error_message != nullptr) {
++      *error_message = ex.what();
++    }
++    return false;
++  } catch (...) {
++    if (error_message != nullptr) {
++      *error_message = "unknown error initializing pdf resources";
++    }
++    return false;
++  }
++}
++
++pdflib::decode_page_config to_decode_page_config(
++    const docling_parse_decode_page_config* source) {
++  pdflib::decode_page_config target;
++  if (source == nullptr) {
++    return target;
++  }
++
++  if (!is_null_or_empty(source->page_boundary)) {
++    target.page_boundary = source->page_boundary;
++  }
++
++  target.do_sanitization = to_bool(source->do_sanitization);
++
++  target.keep_char_cells = to_bool(source->keep_char_cells);
++  target.keep_shapes = to_bool(source->keep_shapes);
++  target.keep_bitmaps = to_bool(source->keep_bitmaps);
++
++  target.max_num_lines = source->max_num_lines;
++  target.max_num_bitmaps = source->max_num_bitmaps;
++
++  target.create_word_cells = to_bool(source->create_word_cells);
++  target.create_line_cells = to_bool(source->create_line_cells);
++  target.enforce_same_font = to_bool(source->enforce_same_font);
++
++  target.horizontal_cell_tolerance = source->horizontal_cell_tolerance;
++  target.word_space_width_factor_for_merge =
++      source->word_space_width_factor_for_merge;
++  target.line_space_width_factor_for_merge =
++      source->line_space_width_factor_for_merge;
++  target.line_space_width_factor_for_merge_with_space =
++      source->line_space_width_factor_for_merge_with_space;
++
++  target.populate_json_objects = to_bool(source->populate_json_objects);
++
++  return target;
++}
++
++document_decoder_ptr get_document(docling_parse_handle* handle,
++                                  const char* key,
++                                  int* status) {
++  if (status != nullptr) {
++    *status = DOCLING_PARSE_STATUS_OK;
++  }
++
++  if (handle == nullptr) {
++    if (status != nullptr) {
++      *status = DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++    }
++    return nullptr;
++  }
++
++  if (is_null_or_empty(key)) {
++    if (status != nullptr) {
++      *status = fail(handle,
++                     DOCLING_PARSE_STATUS_INVALID_ARGUMENT,
++                     "key must be a non-empty UTF-8 string");
++    }
++    return nullptr;
++  }
++
++  auto it = handle->state.key2doc.find(key);
++  if (it == handle->state.key2doc.end()) {
++    if (status != nullptr) {
++      *status = fail(handle,
++                     DOCLING_PARSE_STATUS_NOT_FOUND,
++                     "document key not found: " + std::string(key));
++    }
++    return nullptr;
++  }
++
++  return it->second;
++}
++
++std::string base64_encode(const std::vector<unsigned char>& data) {
++  static constexpr char kTable[] =
++      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
++
++  std::string result;
++  result.reserve(((data.size() + 2) / 3) * 4);
++
++  std::size_t i = 0;
++  while (i + 2 < data.size()) {
++    const auto chunk = (static_cast<unsigned int>(data[i]) << 16) |
++                       (static_cast<unsigned int>(data[i + 1]) << 8) |
++                       static_cast<unsigned int>(data[i + 2]);
++
++    result.push_back(kTable[(chunk >> 18) & 0x3F]);
++    result.push_back(kTable[(chunk >> 12) & 0x3F]);
++    result.push_back(kTable[(chunk >> 6) & 0x3F]);
++    result.push_back(kTable[chunk & 0x3F]);
++    i += 3;
++  }
++
++  if (i < data.size()) {
++    const auto b0 = static_cast<unsigned int>(data[i]);
++    const auto b1 = (i + 1 < data.size()) ? static_cast<unsigned int>(data[i + 1]) : 0U;
++    const auto chunk = (b0 << 16) | (b1 << 8);
++
++    result.push_back(kTable[(chunk >> 18) & 0x3F]);
++    result.push_back(kTable[(chunk >> 12) & 0x3F]);
++
++    if (i + 1 < data.size()) {
++      result.push_back(kTable[(chunk >> 6) & 0x3F]);
++    } else {
++      result.push_back('=');
++    }
++
++    result.push_back('=');
++  }
++
++  return result;
++}
++
++nlohmann::json to_rgba(const std::array<int, 3>& rgb) {
++  nlohmann::json result;
++  result["r"] = rgb[0];
++  result["g"] = rgb[1];
++  result["b"] = rgb[2];
++  result["a"] = 255;
++  return result;
++}
++
++nlohmann::json to_rect(double x0, double y0, double x1, double y1) {
++  nlohmann::json result;
++  result["r_x0"] = utils::values::round(x0);
++  result["r_y0"] = utils::values::round(y0);
++  result["r_x1"] = utils::values::round(x1);
++  result["r_y1"] = utils::values::round(y0);
++  result["r_x2"] = utils::values::round(x1);
++  result["r_y2"] = utils::values::round(y1);
++  result["r_x3"] = utils::values::round(x0);
++  result["r_y3"] = utils::values::round(y1);
++  result["coord_origin"] = "BOTTOMLEFT";
++  return result;
++}
++
++nlohmann::json to_rect(const pdflib::page_item<pdflib::PAGE_CELL>& cell) {
++  nlohmann::json result;
++  result["r_x0"] = utils::values::round(cell.r_x0);
++  result["r_y0"] = utils::values::round(cell.r_y0);
++  result["r_x1"] = utils::values::round(cell.r_x1);
++  result["r_y1"] = utils::values::round(cell.r_y1);
++  result["r_x2"] = utils::values::round(cell.r_x2);
++  result["r_y2"] = utils::values::round(cell.r_y2);
++  result["r_x3"] = utils::values::round(cell.r_x3);
++  result["r_y3"] = utils::values::round(cell.r_y3);
++  result["coord_origin"] = "BOTTOMLEFT";
++  return result;
++}
++
++nlohmann::json to_bbox(const std::array<double, 4>& bbox) {
++  nlohmann::json result;
++  result["l"] = utils::values::round(bbox[0]);
++  result["t"] = utils::values::round(bbox[3]);
++  result["r"] = utils::values::round(bbox[2]);
++  result["b"] = utils::values::round(bbox[1]);
++  result["coord_origin"] = "BOTTOMLEFT";
++  return result;
++}
++
++nlohmann::json to_text_cells(pdflib::page_item<pdflib::PAGE_CELLS>& cells) {
++  nlohmann::json result = nlohmann::json::array();
++
++  for (std::size_t i = 0; i < cells.size(); ++i) {
++    auto& cell = cells[i];
++
++    nlohmann::json value;
++    value["index"] = i;
++    value["rgba"] = to_rgba(cell.rgb_filling_ops);
++    value["rect"] = to_rect(cell);
++    value["text"] = cell.text;
++    value["orig"] = cell.text;
++    value["text_direction"] = cell.left_to_right ? "left_to_right" : "right_to_left";
++    value["confidence"] = 1.0;
++    value["from_ocr"] = false;
++    value["rendering_mode"] = cell.rendering_mode;
++    value["widget"] = cell.widget;
++    value["font_key"] = cell.font_key;
++    value["font_name"] = cell.font_name;
++
++    result.push_back(value);
++  }
++
++  return result;
++}
++
++nlohmann::json to_shapes(pdflib::page_item<pdflib::PAGE_SHAPES>& shapes) {
++  nlohmann::json result = nlohmann::json::array();
++
++  for (std::size_t shape_index = 0; shape_index < shapes.size(); ++shape_index) {
++    auto& shape = shapes[shape_index];
++    auto& x_coords = shape.get_x();
++    auto& y_coords = shape.get_y();
++    auto& indices = shape.get_i();
++
++    for (std::size_t l = 0; l + 1 < indices.size(); l += 2) {
++      const auto i0 = indices[l];
++      const auto i1 = indices[l + 1];
++
++      nlohmann::json points = nlohmann::json::array();
++      for (auto k = i0; k < i1 && k < static_cast<int>(x_coords.size()) &&
++                        k < static_cast<int>(y_coords.size());
++           ++k) {
++        points.push_back(
++            nlohmann::json::array(
++                {utils::values::round(x_coords[k]), utils::values::round(y_coords[k])}));
++      }
++
++      nlohmann::json value;
++      value["index"] = shape_index;
++      value["parent_id"] = l;
++      value["points"] = points;
++      value["coord_origin"] = "BOTTOMLEFT";
++      value["has_graphics_state"] = shape.get_has_graphics_state();
++      value["line_width"] = utils::values::round(shape.get_line_width());
++      value["miter_limit"] = utils::values::round(shape.get_miter_limit());
++      value["line_cap"] = shape.get_line_cap();
++      value["line_join"] = shape.get_line_join();
++      value["dash_phase"] = utils::values::round(shape.get_dash_phase());
++      value["dash_array"] = shape.get_dash_array();
++      value["flatness"] = utils::values::round(shape.get_flatness());
++      value["rgb_stroking"] = to_rgba(shape.get_rgb_stroking_ops());
++      value["rgb_filling"] = to_rgba(shape.get_rgb_filling_ops());
++
++      result.push_back(value);
++    }
++  }
++
++  return result;
++}
++
++nlohmann::json to_widgets(pdflib::page_item<pdflib::PAGE_WIDGETS>& widgets) {
++  nlohmann::json result = nlohmann::json::array();
++
++  for (std::size_t i = 0; i < widgets.size(); ++i) {
++    auto& widget = widgets[i];
++
++    nlohmann::json value;
++    value["index"] = i;
++    value["rect"] = to_rect(widget.x0, widget.y0, widget.x1, widget.y1);
++    value["widget_text"] =
++        widget.text.empty() ? nlohmann::json(nullptr) : nlohmann::json(widget.text);
++    value["widget_description"] = widget.description.empty()
++                                      ? nlohmann::json(nullptr)
++                                      : nlohmann::json(widget.description);
++    value["widget_field_name"] = widget.field_name.empty()
++                                     ? nlohmann::json(nullptr)
++                                     : nlohmann::json(widget.field_name);
++    value["widget_field_type"] = widget.field_type.empty()
++                                     ? nlohmann::json(nullptr)
++                                     : nlohmann::json(widget.field_type);
++
++    result.push_back(value);
++  }
++
++  return result;
++}
++
++nlohmann::json to_hyperlinks(pdflib::page_item<pdflib::PAGE_HYPERLINKS>& hyperlinks) {
++  nlohmann::json result = nlohmann::json::array();
++
++  for (std::size_t i = 0; i < hyperlinks.size(); ++i) {
++    auto& hyperlink = hyperlinks[i];
++
++    nlohmann::json value;
++    value["index"] = i;
++    value["rect"] = to_rect(hyperlink.x0, hyperlink.y0, hyperlink.x1, hyperlink.y1);
++    value["uri"] = hyperlink.uri.empty() ? nlohmann::json(nullptr) : nlohmann::json(hyperlink.uri);
++
++    result.push_back(value);
++  }
++
++  return result;
++}
++
++nlohmann::json to_bitmap_resources(pdflib::page_item<pdflib::PAGE_IMAGES>& images) {
++  nlohmann::json result = nlohmann::json::array();
++
++  for (std::size_t i = 0; i < images.size(); ++i) {
++    auto& image = images[i];
++
++    nlohmann::json value;
++    value["index"] = i;
++    value["rect"] = to_rect(image.x0, image.y0, image.x1, image.y1);
++    value["uri"] = nullptr;
++    value["image"] = nullptr;
++    value["mode"] = "placeholder";
++
++    try {
++      auto bytes = image.get_image_as_bytes();
++      if (!bytes.empty()) {
++        auto format = image.get_image_format();
++        std::string mime_type;
++        if (format == "jpeg") {
++          mime_type = "image/jpeg";
++        } else if (format == "jp2") {
++          mime_type = "image/jp2";
++        } else if (format == "raw" || format == "jbig2") {
++          mime_type = "application/octet-stream";
++        }
++
++        if (!mime_type.empty()) {
++          int dpi = 72;
++          const auto bbox_width = std::abs(image.x1 - image.x0);
++          if (bbox_width > 0.0 && image.image_width > 0) {
++            dpi = static_cast<int>(std::round((image.image_width * 72.0) / bbox_width));
++          }
++
++          const auto base64 = base64_encode(bytes);
++          nlohmann::json image_obj;
++          image_obj["mimetype"] = mime_type;
++          image_obj["dpi"] = dpi;
++          image_obj["size"] =
++              nlohmann::json::object({{"width", image.image_width}, {"height", image.image_height}});
++          image_obj["uri"] = "data:" + mime_type + ";base64," + base64;
++
++          value["image"] = image_obj;
++          value["mode"] = "embedded";
++        }
++      }
++    } catch (...) {
++      // Keep placeholder payload on decode failures to match Python fallback behavior.
++    }
++
++    result.push_back(value);
++  }
++
++  return result;
++}
++
++nlohmann::json to_segmented_page_json(
++    std::shared_ptr<pdflib::pdf_decoder<pdflib::PAGE>> page_decoder,
++    const pdflib::decode_page_config& config) {
++  auto& page_dimension = page_decoder->get_page_dimension();
++  auto crop_bbox = page_dimension.get_crop_bbox();
++  auto media_bbox = page_dimension.get_media_bbox();
++
++  nlohmann::json dimension;
++  dimension["angle"] = page_dimension.get_angle();
++  dimension["rect"] = to_rect(crop_bbox[0], crop_bbox[1], crop_bbox[2], crop_bbox[3]);
++  dimension["boundary_type"] = config.page_boundary.empty() ? "crop_box" : config.page_boundary;
++  dimension["art_bbox"] = to_bbox(crop_bbox);
++  dimension["bleed_bbox"] = to_bbox(crop_bbox);
++  dimension["crop_bbox"] = to_bbox(crop_bbox);
++  dimension["media_bbox"] = to_bbox(media_bbox);
++  dimension["trim_bbox"] = to_bbox(crop_bbox);
++
++  auto char_cells = to_text_cells(page_decoder->get_char_cells());
++  nlohmann::json word_cells = nlohmann::json::array();
++  if (page_decoder->has_word_cells()) {
++    word_cells = to_text_cells(page_decoder->get_word_cells());
++  }
++
++  nlohmann::json textline_cells = nlohmann::json::array();
++  if (page_decoder->has_line_cells()) {
++    textline_cells = to_text_cells(page_decoder->get_line_cells());
++  }
++
++  auto shapes = to_shapes(page_decoder->get_page_shapes());
++  auto widgets = to_widgets(page_decoder->get_page_widgets());
++  auto hyperlinks = to_hyperlinks(page_decoder->get_page_hyperlinks());
++  auto bitmap_resources = to_bitmap_resources(page_decoder->get_page_images());
++
++  nlohmann::json result;
++  result["dimension"] = dimension;
++  result["bitmap_resources"] = bitmap_resources;
++  result["char_cells"] = char_cells;
++  result["word_cells"] = word_cells;
++  result["textline_cells"] = textline_cells;
++  result["has_chars"] = !char_cells.empty();
++  result["has_words"] = !word_cells.empty();
++  result["has_lines"] = !textline_cells.empty();
++  result["widgets"] = widgets;
++  result["hyperlinks"] = hyperlinks;
++  result["lines"] = nlohmann::json::array();
++  result["shapes"] = shapes;
++
++  return result;
++}
++
++}  // namespace
++
++extern "C" {
++
++int docling_parse_get_abi_version(int* out_major, int* out_minor, int* out_patch) {
++  if (out_major == nullptr || out_minor == nullptr || out_patch == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  *out_major = DOCLING_PARSE_C_ABI_VERSION_MAJOR;
++  *out_minor = DOCLING_PARSE_C_ABI_VERSION_MINOR;
++  *out_patch = DOCLING_PARSE_C_ABI_VERSION_PATCH;
++  return DOCLING_PARSE_STATUS_OK;
++}
++
++size_t docling_parse_get_decode_page_config_size(void) {
++  return sizeof(docling_parse_decode_page_config);
++}
++
++int docling_parse_init_decode_page_config(
++    docling_parse_decode_page_config* out_config, size_t config_size) {
++  if (out_config == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  if (config_size < sizeof(docling_parse_decode_page_config)) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  std::memset(out_config, 0, config_size);
++
++  pdflib::decode_page_config defaults;
++  out_config->page_boundary = "crop_box";
++
++  out_config->do_sanitization = defaults.do_sanitization ? 1 : 0;
++  out_config->keep_char_cells = defaults.keep_char_cells ? 1 : 0;
++  out_config->keep_shapes = defaults.keep_shapes ? 1 : 0;
++  out_config->keep_bitmaps = defaults.keep_bitmaps ? 1 : 0;
++
++  out_config->max_num_lines = defaults.max_num_lines;
++  out_config->max_num_bitmaps = defaults.max_num_bitmaps;
++
++  out_config->create_word_cells = defaults.create_word_cells ? 1 : 0;
++  out_config->create_line_cells = defaults.create_line_cells ? 1 : 0;
++  out_config->enforce_same_font = defaults.enforce_same_font ? 1 : 0;
++
++  out_config->horizontal_cell_tolerance = defaults.horizontal_cell_tolerance;
++  out_config->word_space_width_factor_for_merge =
++      defaults.word_space_width_factor_for_merge;
++  out_config->line_space_width_factor_for_merge =
++      defaults.line_space_width_factor_for_merge;
++  out_config->line_space_width_factor_for_merge_with_space =
++      defaults.line_space_width_factor_for_merge_with_space;
++
++  out_config->populate_json_objects = defaults.populate_json_objects ? 1 : 0;
++  return DOCLING_PARSE_STATUS_OK;
++}
++
++void docling_parse_get_default_decode_page_config(
++    docling_parse_decode_page_config* out_config) {
++  (void)docling_parse_init_decode_page_config(
++      out_config, sizeof(docling_parse_decode_page_config));
++}
++
++int docling_parse_create(const char* log_level, docling_parse_handle** out_handle) {
++  if (out_handle == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  try {
++    ensure_loguru_initialized();
++    set_loglevel_with_label(null_to_empty(log_level).empty() ? "error" : log_level);
++
++    auto* handle = new docling_parse_handle();
++    clear_last_error(handle);
++
++    *out_handle = handle;
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    (void)ex;
++    *out_handle = nullptr;
++    return DOCLING_PARSE_STATUS_INTERNAL_ERROR;
++  } catch (...) {
++    *out_handle = nullptr;
++    return DOCLING_PARSE_STATUS_INTERNAL_ERROR;
++  }
++}
++
++void docling_parse_destroy(docling_parse_handle* handle) {
++  delete handle;
++}
++
++int docling_parse_set_loglevel(docling_parse_handle* handle, const char* log_level) {
++  if (handle == nullptr || is_null_or_empty(log_level)) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  try {
++    clear_last_error(handle);
++    set_loglevel_with_label(log_level);
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, ex.what());
++  } catch (...) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_INTERNAL_ERROR,
++                "unknown error setting log level");
++  }
++}
++
++int docling_parse_set_resources_dir(docling_parse_handle* handle,
++                                    const char* resources_dir) {
++  if (handle == nullptr || is_null_or_empty(resources_dir)) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  try {
++    clear_last_error(handle);
++
++    std::filesystem::path path(resources_dir);
++    if (!resource_utils::set_resources_dir(path)) {
++      return fail(handle,
++                  DOCLING_PARSE_STATUS_OPERATION_FAILED,
++                  "resources directory does not exist: " + std::string(resources_dir));
++    }
++
++    std::string init_error;
++    if (!initialise_font_resources(&init_error)) {
++      return fail(handle, DOCLING_PARSE_STATUS_OPERATION_FAILED, init_error);
++    }
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, ex.what());
++  } catch (...) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_INTERNAL_ERROR,
++                "unknown error setting resources directory");
++  }
++}
++
++int docling_parse_load_document(docling_parse_handle* handle,
++                                const char* key,
++                                const char* filename,
++                                const char* password_or_null) {
++  if (handle == nullptr || is_null_or_empty(key) || is_null_or_empty(filename)) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  try {
++    clear_last_error(handle);
++
++    std::string filename_value = filename;
++    std::string init_error;
++    if (!initialise_font_resources(&init_error)) {
++      return fail(handle, DOCLING_PARSE_STATUS_OPERATION_FAILED, init_error);
++    }
++
++#ifdef _WIN32
++    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
++    std::filesystem::path filename_path(converter.from_bytes(filename_value));
++#else
++    std::filesystem::path filename_path(filename_value);
++#endif
++
++    if (!std::filesystem::exists(filename_path)) {
++      return fail(handle,
++                  DOCLING_PARSE_STATUS_NOT_FOUND,
++                  "file not found: " + filename_value);
++    }
++
++    std::optional<std::string> password;
++    if (!is_null_or_empty(password_or_null)) {
++      password = password_or_null;
++    }
++
++    auto decoder = std::make_shared<document_decoder>();
++    if (!decoder->process_document_from_file(filename_value, password)) {
++      return fail(handle,
++                  DOCLING_PARSE_STATUS_OPERATION_FAILED,
++                  "failed to load document from file: " + filename_value);
++    }
++
++    handle->state.key2doc[key] = decoder;
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, ex.what());
++  } catch (...) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_INTERNAL_ERROR,
++                "unknown error loading document");
++  }
++}
++
++int docling_parse_load_document_from_bytes(docling_parse_handle* handle,
++                                           const char* key,
++                                           const uint8_t* bytes,
++                                           size_t length,
++                                           const char* description_or_null,
++                                           const char* password_or_null) {
++  if (handle == nullptr || is_null_or_empty(key) || bytes == nullptr || length == 0) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  try {
++    clear_last_error(handle);
++
++    std::string buffer(reinterpret_cast<const char*>(bytes), length);
++    std::string init_error;
++    if (!initialise_font_resources(&init_error)) {
++      return fail(handle, DOCLING_PARSE_STATUS_OPERATION_FAILED, init_error);
++    }
++    std::optional<std::string> password;
++    if (!is_null_or_empty(password_or_null)) {
++      password = password_or_null;
++    }
++
++    std::string description = "processing memory buffer";
++    if (!is_null_or_empty(description_or_null)) {
++      description = description_or_null;
++    }
++
++    auto decoder = std::make_shared<document_decoder>();
++    if (!decoder->process_document_from_bytesio(buffer, password, description)) {
++      return fail(handle,
++                  DOCLING_PARSE_STATUS_OPERATION_FAILED,
++                  "failed to load document from bytes");
++    }
++
++    handle->state.key2doc[key] = decoder;
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, ex.what());
++  } catch (...) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_INTERNAL_ERROR,
++                "unknown error loading document from bytes");
++  }
++}
++
++int docling_parse_unload_document(docling_parse_handle* handle, const char* key) {
++  if (handle == nullptr || is_null_or_empty(key)) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  clear_last_error(handle);
++  auto it = handle->state.key2doc.find(key);
++  if (it == handle->state.key2doc.end()) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_NOT_FOUND,
++                "document key not found: " + std::string(key));
++  }
++
++  handle->state.key2doc.erase(it);
++  return DOCLING_PARSE_STATUS_OK;
++}
++
++int docling_parse_unload_documents(docling_parse_handle* handle) {
++  if (handle == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  clear_last_error(handle);
++  handle->state.key2doc.clear();
++  return DOCLING_PARSE_STATUS_OK;
++}
++
++int docling_parse_number_of_pages(docling_parse_handle* handle,
++                                  const char* key,
++                                  int* out_page_count) {
++  if (out_page_count == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  clear_last_error(handle);
++
++  int status = DOCLING_PARSE_STATUS_OK;
++  auto decoder = get_document(handle, key, &status);
++  if (decoder == nullptr) {
++    return status;
++  }
++
++  *out_page_count = decoder->get_number_of_pages();
++  return DOCLING_PARSE_STATUS_OK;
++}
++
++int docling_parse_get_annotations_json(docling_parse_handle* handle,
++                                       const char* key,
++                                       char** out_json_utf8) {
++  if (out_json_utf8 == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  *out_json_utf8 = nullptr;
++  clear_last_error(handle);
++
++  try {
++    int status = DOCLING_PARSE_STATUS_OK;
++    auto decoder = get_document(handle, key, &status);
++    if (decoder == nullptr) {
++      return status;
++    }
++
++    auto json = decoder->get_annotations().dump();
++    auto* output = copy_to_c_string(json);
++    if (output == nullptr) {
++      return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, "out of memory");
++    }
++
++    *out_json_utf8 = output;
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, ex.what());
++  } catch (...) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_INTERNAL_ERROR,
++                "unknown error serializing annotations");
++  }
++}
++
++int docling_parse_get_table_of_contents_json(docling_parse_handle* handle,
++                                             const char* key,
++                                             char** out_json_utf8) {
++  if (out_json_utf8 == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  *out_json_utf8 = nullptr;
++  clear_last_error(handle);
++
++  try {
++    int status = DOCLING_PARSE_STATUS_OK;
++    auto decoder = get_document(handle, key, &status);
++    if (decoder == nullptr) {
++      return status;
++    }
++
++    auto json = decoder->get_table_of_contents().dump();
++    auto* output = copy_to_c_string(json);
++    if (output == nullptr) {
++      return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, "out of memory");
++    }
++
++    *out_json_utf8 = output;
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, ex.what());
++  } catch (...) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_INTERNAL_ERROR,
++                "unknown error serializing table of contents");
++  }
++}
++
++int docling_parse_get_meta_xml_json(docling_parse_handle* handle,
++                                    const char* key,
++                                    char** out_json_utf8) {
++  if (out_json_utf8 == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  *out_json_utf8 = nullptr;
++  clear_last_error(handle);
++
++  try {
++    int status = DOCLING_PARSE_STATUS_OK;
++    auto decoder = get_document(handle, key, &status);
++    if (decoder == nullptr) {
++      return status;
++    }
++
++    auto json = decoder->get_meta_xml().dump();
++    auto* output = copy_to_c_string(json);
++    if (output == nullptr) {
++      return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, "out of memory");
++    }
++
++    *out_json_utf8 = output;
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, ex.what());
++  } catch (...) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_INTERNAL_ERROR,
++                "unknown error serializing metadata");
++  }
++}
++
++int docling_parse_decode_page_json(docling_parse_handle* handle,
++                                   const char* key,
++                                   int page_number,
++                                   const docling_parse_decode_page_config* config_or_null,
++                                   char** out_json_utf8) {
++  if (out_json_utf8 == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  *out_json_utf8 = nullptr;
++  clear_last_error(handle);
++
++  try {
++    int status = DOCLING_PARSE_STATUS_OK;
++    auto decoder = get_document(handle, key, &status);
++    if (decoder == nullptr) {
++      return status;
++    }
++
++    auto config = to_decode_page_config(config_or_null);
++
++    // The underlying decoder caches page decoders. To ensure config parity per call,
++    // unload and decode again for this page.
++    decoder->unload_page(page_number);
++
++    auto page_decoder = decoder->decode_page(page_number, config);
++    if (page_decoder == nullptr) {
++      return fail(handle,
++                  DOCLING_PARSE_STATUS_OPERATION_FAILED,
++                  "failed to decode page " + std::to_string(page_number));
++    }
++
++    auto json = page_decoder->get(config).dump();
++    auto* output = copy_to_c_string(json);
++    if (output == nullptr) {
++      return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, "out of memory");
++    }
++
++    *out_json_utf8 = output;
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, ex.what());
++  } catch (...) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_INTERNAL_ERROR,
++                "unknown error decoding page");
++  }
++}
++
++int docling_parse_decode_segmented_page_json(
++    docling_parse_handle* handle,
++    const char* key,
++    int page_number,
++    const docling_parse_decode_page_config* config_or_null,
++    char** out_json_utf8) {
++  if (out_json_utf8 == nullptr) {
++    return DOCLING_PARSE_STATUS_INVALID_ARGUMENT;
++  }
++
++  *out_json_utf8 = nullptr;
++  clear_last_error(handle);
++
++  try {
++    int status = DOCLING_PARSE_STATUS_OK;
++    auto decoder = get_document(handle, key, &status);
++    if (decoder == nullptr) {
++      return status;
++    }
++
++    auto config = to_decode_page_config(config_or_null);
++    if (config_or_null == nullptr) {
++      config.do_sanitization = false;
++    }
++
++    decoder->unload_page(page_number);
++
++    auto page_decoder = decoder->decode_page(page_number, config);
++    if (page_decoder == nullptr) {
++      return fail(handle,
++                  DOCLING_PARSE_STATUS_OPERATION_FAILED,
++                  "failed to decode page " + std::to_string(page_number));
++    }
++
++    auto json = to_segmented_page_json(page_decoder, config).dump();
++    auto* output = copy_to_c_string(json);
++    if (output == nullptr) {
++      return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, "out of memory");
++    }
++
++    *out_json_utf8 = output;
++    return DOCLING_PARSE_STATUS_OK;
++  } catch (const std::exception& ex) {
++    return fail(handle, DOCLING_PARSE_STATUS_INTERNAL_ERROR, ex.what());
++  } catch (...) {
++    return fail(handle,
++                DOCLING_PARSE_STATUS_INTERNAL_ERROR,
++                "unknown error decoding segmented page");
++  }
++}
++
++void docling_parse_free_string(char* value) {
++  std::free(value);
++}
++
++const char* docling_parse_get_last_error(const docling_parse_handle* handle) {
++  static const char* empty = "";
++  if (handle == nullptr) {
++    return empty;
++  }
++
++  return handle->state.last_error.c_str();
++}
++
++}  // extern "C"
+
+diff --git a/src/c_api/docling_parse_c_api.h b/src/c_api/docling_parse_c_api.h
+new file mode 100644
+index 0000000..adfb8b4
+--- /dev/null
++++ b/src/c_api/docling_parse_c_api.h
+@@ -0,0 +1,138 @@
++//-*-C-*-
++
++#ifndef DOCLING_PARSE_C_API_H
++#define DOCLING_PARSE_C_API_H
++
++#include <stddef.h>
++#include <stdint.h>
++
++#define DOCLING_PARSE_C_ABI_VERSION_MAJOR 1
++#define DOCLING_PARSE_C_ABI_VERSION_MINOR 1
++#define DOCLING_PARSE_C_ABI_VERSION_PATCH 0
++
++#if defined(_WIN32) && defined(DOCLING_PARSE_C_API_EXPORTS)
++#define DOCLING_PARSE_C_API __declspec(dllexport)
++#elif defined(_WIN32)
++#define DOCLING_PARSE_C_API __declspec(dllimport)
++#else
++#define DOCLING_PARSE_C_API
++#endif
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++typedef struct docling_parse_handle docling_parse_handle;
++
++typedef enum docling_parse_status_code {
++  DOCLING_PARSE_STATUS_OK = 0,
++  DOCLING_PARSE_STATUS_INVALID_ARGUMENT = 1,
++  DOCLING_PARSE_STATUS_NOT_FOUND = 2,
++  DOCLING_PARSE_STATUS_OPERATION_FAILED = 3,
++  DOCLING_PARSE_STATUS_INTERNAL_ERROR = 4
++} docling_parse_status_code;
++
++typedef struct docling_parse_decode_page_config {
++  const char* page_boundary;
++
++  int do_sanitization;
++
++  int keep_char_cells;
++  int keep_shapes;
++  int keep_bitmaps;
++
++  int max_num_lines;
++  int max_num_bitmaps;
++
++  int create_word_cells;
++  int create_line_cells;
++  int enforce_same_font;
++
++  double horizontal_cell_tolerance;
++  double word_space_width_factor_for_merge;
++  double line_space_width_factor_for_merge;
++  double line_space_width_factor_for_merge_with_space;
++
++  int populate_json_objects;
++} docling_parse_decode_page_config;
++
++DOCLING_PARSE_C_API int docling_parse_get_abi_version(int* out_major,
++                                                      int* out_minor,
++                                                      int* out_patch);
++DOCLING_PARSE_C_API size_t docling_parse_get_decode_page_config_size(void);
++DOCLING_PARSE_C_API int docling_parse_init_decode_page_config(
++    docling_parse_decode_page_config* out_config,
++    size_t config_size);
++DOCLING_PARSE_C_API void docling_parse_get_default_decode_page_config(
++    docling_parse_decode_page_config* out_config);
++
++DOCLING_PARSE_C_API int docling_parse_create(const char* log_level,
++                                             docling_parse_handle** out_handle);
++DOCLING_PARSE_C_API void docling_parse_destroy(docling_parse_handle* handle);
++
++DOCLING_PARSE_C_API int docling_parse_set_loglevel(docling_parse_handle* handle,
++                                                   const char* log_level);
++DOCLING_PARSE_C_API int docling_parse_set_resources_dir(
++    docling_parse_handle* handle,
++    const char* resources_dir);
++
++DOCLING_PARSE_C_API int docling_parse_load_document(
++    docling_parse_handle* handle,
++    const char* key,
++    const char* filename,
++    const char* password_or_null);
++
++DOCLING_PARSE_C_API int docling_parse_load_document_from_bytes(
++    docling_parse_handle* handle,
++    const char* key,
++    const uint8_t* bytes,
++    size_t length,
++    const char* description_or_null,
++    const char* password_or_null);
++
++DOCLING_PARSE_C_API int docling_parse_unload_document(docling_parse_handle* handle,
++                                                      const char* key);
++DOCLING_PARSE_C_API int docling_parse_unload_documents(docling_parse_handle* handle);
++
++DOCLING_PARSE_C_API int docling_parse_number_of_pages(docling_parse_handle* handle,
++                                                      const char* key,
++                                                      int* out_page_count);
++
++DOCLING_PARSE_C_API int docling_parse_get_annotations_json(
++    docling_parse_handle* handle,
++    const char* key,
++    char** out_json_utf8);
++
++DOCLING_PARSE_C_API int docling_parse_get_table_of_contents_json(
++    docling_parse_handle* handle,
++    const char* key,
++    char** out_json_utf8);
++
++DOCLING_PARSE_C_API int docling_parse_get_meta_xml_json(docling_parse_handle* handle,
++                                                        const char* key,
++                                                        char** out_json_utf8);
++
++DOCLING_PARSE_C_API int docling_parse_decode_page_json(
++    docling_parse_handle* handle,
++    const char* key,
++    int page_number,
++    const docling_parse_decode_page_config* config_or_null,
++    char** out_json_utf8);
++
++DOCLING_PARSE_C_API int docling_parse_decode_segmented_page_json(
++    docling_parse_handle* handle,
++    const char* key,
++    int page_number,
++    const docling_parse_decode_page_config* config_or_null,
++    char** out_json_utf8);
++
++DOCLING_PARSE_C_API void docling_parse_free_string(char* value);
++
++DOCLING_PARSE_C_API const char* docling_parse_get_last_error(
++    const docling_parse_handle* handle);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif

@@ -1,0 +1,13 @@
+{
+    "schema_version":  1,
+    "updated_at_utc":  "2026-02-20T18:51:42.7423116Z",
+    "upstream_repository":  "https://github.com/docling-project/docling-parse.git",
+    "upstream_repository_local_path":  "D:\\code\\sparkeh9\\doclingdotnet\\upstream\\deps\\docling-parse",
+    "upstream_branch":  "main",
+    "upstream_head_commit":  "b0817dbac14dee836ba274823c66337c2047b413",
+    "tracked_ref":  "origin/main",
+    "tracked_ref_commit":  "b0817dbac14dee836ba274823c66337c2047b413",
+    "patch_file":  "patches/docling-parse/0001-docling-parse-cabi-foundation-and-segmented-runtime.patch",
+    "patch_sha256":  "55a088e4226e014b00b801e75068677f75124d16e076584b6dd626f9647d51db",
+    "root_repo_commit":  "125e80707ad0da2c84663b5fd93f44f79b9a1b2f"
+}

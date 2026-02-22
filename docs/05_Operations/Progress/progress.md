@@ -23,6 +23,18 @@ Workspace: `D:\code\sparkeh9\doclingdotnet`
 
 ## Iteration Log
 
+### 2026-02-22 14:00 - Audio Transcription (ASR)
+- Changed:
+  - Added native ASR via `Whisper.net`.
+  - Created `IDoclingAsrProvider` and `AudioConversionRunner` to parse `.wav` and `.mp3` offline.
+  - Added `FFMpegCore` dependency and `AudioTranscoder` utility to automatically normalize and resample multi-format audio containers prior to Whisper inference. 
+  - Hydrated `SegmentedPdfPageDto` natively to match upstream Whisper document structure parity.
+  - Added `audio_quality_testing_samples` sub-repository to initialization workspace.
+  - Updated usage docs and benchmark claims.
+- Validation:
+  - `dotnet test` `AudioConversionRunnerSemanticsTests.cs` local pass (validating transcription and JSON extraction format).
+- Next: Move on to PPTX or HTML parsers.
+
 ### 2026-02-20 20:49 - Non-text Context Signatures
 - Commit: `7924cef`
 - Changed: Added non-text context signature drift checks for `bitmap_resources`, `widgets`, `hyperlinks`, `shapes`.

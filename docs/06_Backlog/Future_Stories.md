@@ -190,3 +190,17 @@ Current implementation:
 
 Remaining:
 - No open P3 OCR substrate gaps currently tracked; continue broader parity depth under FS-001/P4.
+
+### FS-007 - .NET ASR Pipeline (Audio Transcription)
+Status: Planned  
+Priority: Medium
+
+Deliver:
+- Standalone audio conversion pipeline mapping `InputFormat.AUDIO` to a `.NET` equivalent `AsrPipeline`.
+- Integration of a fast, local C# inference backend for Whisper (e.g., `Whisper.net` mapping to `whisper.cpp`, or `Microsoft.ML.OnnxRuntime`).
+- Extension of the core data model (`SegmentedPdfPageDto` or equivalent `DoclingDocument` representations) to support `TrackSource` metadata extensions on text elements (`start_time`, `end_time`, `voice`).
+- Smoke tests asserting fast and deterministic text transcription from standard `.wav`/`.mp3` audio payload inputs.
+
+Context:
+- Upstream Python implementation relies on a dedicated `AsrPipeline` with a `NoOpBackend` and wraps `openai/whisper` or `mlx_whisper`.
+- Bypassing Python logic for a native C# Whisper inference engine ensures high performance and does not conflict with the project's spatial PDF parity engine (since audio involves no visual geometry processing).

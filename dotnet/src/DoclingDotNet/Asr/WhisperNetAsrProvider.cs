@@ -19,12 +19,14 @@ public sealed class WhisperNetAsrProvider : IDoclingAsrProvider, IDisposable
     private readonly WhisperFactory _whisperFactory;
     private readonly WhisperProcessor _processor;
     private readonly string _modelPath;
+    private readonly string _language;
     
     public string Name => "Whisper.net (whisper.cpp native)";
 
-    public WhisperNetAsrProvider(string modelPath)
+    public WhisperNetAsrProvider(string modelPath, string language = "en")
     {
         _modelPath = modelPath;
+        _language = language;
         if (!File.Exists(modelPath))
         {
             throw new FileNotFoundException($"The specified Whisper GGML model was not found: {modelPath}");
@@ -32,7 +34,7 @@ public sealed class WhisperNetAsrProvider : IDoclingAsrProvider, IDisposable
 
         _whisperFactory = WhisperFactory.FromPath(modelPath);
         _processor = _whisperFactory.CreateBuilder()
-            .WithLanguage("en")
+            .WithLanguage(language)
             .Build();
     }
 

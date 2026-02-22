@@ -101,28 +101,17 @@ public sealed class DoclingAudioConversionRunner
                     Name = AudioConversionStageNames.LoadAudio,
                     ExecuteAsync = async (_, token) =>
                     {
-                        var isWav = request.FilePath?.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) == true;
-
                         if (request.InputStream != null)
                         {
-                            // If a stream is provided directly, we assume it's PCM. 
-                            // Optionally, we could probe the stream header here.
+                            // If a stream is provided directly, we assume it's natively PCM. 
                             audioStream = request.InputStream;
                         }
                         else
                         {
-                            if (isWav)
-                            {
-                                // Load standard WAVs directly to memory to avoid locking
-                                var bytes = await File.ReadAllBytesAsync(request.FilePath!, token).ConfigureAwait(false);
-                                audioStream = new MemoryStream(bytes);
-                            }
-                            else
-                            {
-                                // Non-WAV file detected (e.g. mp3, m4a, flac). Transcode it to 16kHz PCM via FFmpeg.
-                                using var fs = File.OpenRead(request.FilePath!);
-                                audioStream = await AudioTranscoder.NormalizeToWhisperPcmAsync(fs, token).ConfigureAwait(false);
-                            }
+                            // Always transcode files (even .wav) to 16kHz Mono PCM via FFmpeg. 
+                            // Whisper natively requires 16KHz 16-bit Mono and will crash otherwise.
+                            using var fs = File.OpenRead(request.FilePath!);
+                            audioStream = await AudioTranscoder.NormalizeToWhisperPcmAsync(fs, token).ConfigureAwait(false);
                         }
                     }
                 },

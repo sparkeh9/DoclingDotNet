@@ -34,7 +34,7 @@ internal static class AudioTranscoder
                 .FromPipeInput(new StreamPipeSource(inputStream))
                 .OutputToPipe(new StreamPipeSink(outputStream), options => options
                     .ForceFormat("wav")
-                    .WithCustomArgument($"-ar {WhisperSampleRate} -ac {WhisperChannels} -f s16le"))
+                    .WithCustomArgument($"-ar {WhisperSampleRate} -ac {WhisperChannels} -c:a pcm_s16le"))
                 .CancellableThrough(cancellationToken)
                 .ProcessAsynchronously()
                 .ConfigureAwait(false);

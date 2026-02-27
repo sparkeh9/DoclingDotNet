@@ -180,6 +180,18 @@ public sealed class BitmapImageSizeDto
     public Dictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
+public sealed class TrackSourceDto
+{
+    [JsonPropertyName("start_time")]
+    public double? StartTime { get; set; }
+
+    [JsonPropertyName("end_time")]
+    public double? EndTime { get; set; }
+
+    [JsonPropertyName("voice")]
+    public string? Voice { get; set; }
+}
+
 public sealed class PdfTextCellDto
 {
     [JsonPropertyName("index")]
@@ -217,6 +229,9 @@ public sealed class PdfTextCellDto
 
     [JsonPropertyName("font_name")]
     public string FontName { get; set; } = string.Empty;
+
+    [JsonPropertyName("source")]
+    public TrackSourceDto? Source { get; set; }
 
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? ExtensionData { get; set; }

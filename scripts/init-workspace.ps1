@@ -57,7 +57,12 @@ Initialize-Repo `
     -BaselinePath "patches/docling/upstream-baseline.json" `
     -LocalPath "upstream/docling"
 
-# 3. Apply patch to docling-parse
+# 3. Initialize audio testing samples
+Initialize-Repo `
+    -BaselinePath "patches/audio-testing-samples/upstream-baseline.json" `
+    -LocalPath "upstream/audio-testing-samples"
+
+# 4. Apply patch to docling-parse
 if (-not $SkipPatch) {
     Write-Host "[init] applying patches..."
     $powerShellHost = (Get-Process -Id $PID).Path

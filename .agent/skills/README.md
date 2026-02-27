@@ -8,5 +8,5 @@ Purpose: repository-specific process skills for reducing execution inefficiencie
 - `hung-run-recovery`: Recover quickly from stuck command sessions and prevent repeat hangs.
 - `vertical-slice-gate`: Enforce bottom-up slice completion checks before moving upward.
 - `docs-vault-maintainer`: Keep docs lean; update root `docs/`/`CHANGELOG` only for milestone or contract/workflow changes.
-- `lean-iteration-logging`: Enforce concise per-iteration `Changed / Validation / Next` summaries in `docs/05_Operations/Progress/progress.md`.
+- `lean-iteration-logging`: Enforce concise per-iteration `Changed / Validation / Next` summaries in `docs/operations/progress.md`.
 - `docling-upstream-upgrade`: Execute one-command upstream upgrade workflow ("fetch latest and port changes over") with baseline metadata and validations.

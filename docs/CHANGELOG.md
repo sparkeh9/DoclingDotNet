@@ -4,6 +4,11 @@ All notable documentation and implementation coordination changes for this repos
 
 ## [Unreleased]
 ### Added
+- Tag-driven NuGet publish workflow:
+  - `.github/workflows/publish-nuget.yml` (triggers on `v*.*.*` tags, publishes to NuGet.org via `NUGET_API_KEY` secret)
+- NuGet versioning now driven by `VERSION` MSBuild property:
+  - `dotnet/src/DoclingDotNet/DoclingDotNet.csproj` (fallback: `1.0.0-dev`; override: `-p:VERSION=<tag>`)
+
 - FS-001 initial parity harness implementation:
   - `dotnet/src/DoclingDotNet/Parity/SegmentedParityComparer.cs`
   - `dotnet/src/DoclingDotNet/Parity/SegmentedParityTypes.cs`

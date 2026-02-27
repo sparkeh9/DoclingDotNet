@@ -14,7 +14,7 @@ Preserve useful documentation without high-churn doc overhead.
 - CI/workflow or upgrade-process changes.
 
 ## Required actions
-1. Always append one concise entry to `docs/05_Operations/Progress/progress.md`:
+1. Always append one concise entry to `docs/operations/progress.md`:
    - `Changed`
    - `Validation`
    - `Next`
@@ -28,10 +28,10 @@ Preserve useful documentation without high-churn doc overhead.
 ## Default behavior
 - Prefer **no broad docs sweep** per small slice.
 - Avoid touching multiple docs files for routine internal implementation increments.
-- Keep iteration-level detail in `docs/05_Operations/Progress/progress.md` only.
+- Keep iteration-level detail in `docs/operations/progress.md` only.
 
 ## Completion gate
-- Iteration is documented when concise `docs/05_Operations/Progress/progress.md` entry exists.
+- Iteration is documented when concise `docs/operations/progress.md` entry exists.
 - Milestone/contract/workflow changes also require:
   - `docs/CHANGELOG.md` update
   - targeted doc page update(s) only where needed.

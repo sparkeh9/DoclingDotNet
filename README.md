@@ -15,7 +15,7 @@ DoclingDotNet is a high-fidelity, cross-platform .NET port of IBM's [Docling](ht
 
 By replacing heavy Python and C++ spatial algorithms with zero-allocation, pure-managed C# code, DoclingDotNet parses complex PDFs **up to 2x faster** and structured formats like DOCX/HTML **over 10x faster** than the upstream implementation while maintaining **100% semantic behavioral parity**.
 
-It features a completely managed pipeline with native support for structured formats (DOCX, PPTX, HTML, EPUB, EML) and advanced AI extraction for PDFs (via ONNX RT-DETR layout inference and Tesseract OCR).
+It features a completely managed pipeline with native support for structured formats (DOCX, PPTX, HTML, EPUB, EML), advanced AI extraction for PDFs (via ONNX RT-DETR layout inference and Tesseract OCR), and now native Audio Speech Recognition (ASR) via Whisper.net.
 
 ## Start Here
 - 🚀 **[Quick Start & Usage Guide](docs/USAGE.md)**: Learn how to convert documents, enable AI layouts, and extract Markdown/HTML.
@@ -36,10 +36,11 @@ You can read the full case study here: [**Strangling the Python Monolith to High
 
 ## Key Features
 
-*   **Universal Input**: Seamlessly parses `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.html`, `.epub`, `.eml`, `.md`, `.csv`, and raw images.
+*   **Universal Input**: Seamlessly parses `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.html`, `.epub`, `.eml`, `.md`, `.csv`, `.wav`, `.mp3` and raw images.
 *   **Universal Output**: Regardless of the input format, DoclingDotNet emits a unified, highly-structured JSON data model (`SegmentedPdfPageDto`).
 *   **Built-in Exporters**: Export the unified model directly to Markdown, HTML, Plain Text, or DocTags for immediate ingestion into LLMs or Vector Databases (RAG pipelines).
 *   **AI-Powered Layouts**: Configurable pipeline allows routing complex PDFs through local ONNX `RT-DETR` models to accurately group tables, figures, and paragraphs.
+*   **Native Audio Transcription (ASR)**: Configurable pipeline runs `Whisper.net` to instantly transcribe `.wav` or transcodes `.mp3`/`.m4a` files locally (requires `ffmpeg` on path) and hydrates them directly into the standard JSON schema with timeline tracking.
 *   **Cloud Native & Serverless Ready**: 100% `System.IO.Stream` compatible. Parse documents directly from memory buffers without touching the disk.
 
 ## Quick Example

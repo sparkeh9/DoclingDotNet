@@ -2,7 +2,7 @@
     "schema_version":  1,
     "updated_at_utc":  "2026-02-20T18:51:42.7423116Z",
     "upstream_repository":  "https://github.com/docling-project/docling-parse.git",
-    "upstream_repository_local_path":  "D:\\code\\sparkeh9\\doclingdotnet\\upstream\\deps\\docling-parse",
+    "upstream_repository_local_path":  "upstream/deps/docling-parse",
     "upstream_branch":  "main",
     "upstream_head_commit":  "b0817dbac14dee836ba274823c66337c2047b413",
     "tracked_ref":  "origin/main",

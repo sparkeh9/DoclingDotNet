@@ -137,7 +137,49 @@ var result = await pdfRunner.ExecuteAsync(request);
 
 ---
 
-## 3. Native Semantic Formats (Non-PDF Backends)
+## 3. Native Audio Transcription (ASR)
+
+DoclingDotNet supports audio transcription natively using `Whisper.net`, completely bypassing Python for extreme inference performance. Just like the PDF conversion pipeline, audio extraction maps directly into the standard `DoclingDocument` JSON structures (with `TrackSource` metadata encoding start/end timestamps).
+
+> [!NOTE]
+> Converting from non-WAV formats (MP4, MP3, FLAC, M4A) requires `ffmpeg` to be installed on the host system and available in the `$PATH`. If `ffmpeg` is missing, only standard 16 kHz (16,000 Hz) 16-bit Mono PCM `.wav` files will process automatically.
+
+**1. Install `Whisper.net`:**
+```xml
+<PackageReference Include="Whisper.net" Version="1.9.0" />
+<PackageReference Include="Whisper.net.Runtime" Version="1.9.0" />
+```
+
+**2. Transcribe Audio:**
+```csharp
+using DoclingDotNet.Asr;
+using DoclingDotNet.Pipeline;
+
+// Load a local GGML Whisper model
+using var provider = new WhisperNetAsrProvider("ggml-base.en.bin");
+
+var request = new AudioConversionRequest
+{
+    FilePath = "podcast.wav",
+    AsrProvider = provider
+};
+
+var runner = new DoclingAudioConversionRunner();
+var result = await runner.ExecuteAsync(request);
+
+// The transcribed chunks are packed identically to PDF text cells!
+foreach (var page in result.Pages)
+{
+    foreach (var cell in page.TextlineCells)
+    {
+        Console.WriteLine($"[{cell.Source.StartTime} -> {cell.Source.EndTime}] {cell.Text}");
+    }
+}
+```
+
+---
+
+## 4. Native Semantic Formats (Non-PDF Backends)
 
 While the `DocumentConversionRunner` automatically handles routing, `DoclingDotNet` natively supports parsing many structured document formats without incurring the massive overhead of optical layout AI. 
 

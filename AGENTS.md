@@ -6,8 +6,8 @@ Future agents need one stable operating prompt so work stays cumulative, compara
 
 This guidance is derived from:
 - `docling_dotnet_port_report.md` (initial feasibility + risk map)
-- `docs/04_Assessment/Native_Assessment.md` (assumption pressure-test results)
-- `docs/05_Operations/Progress/progress.md` (implemented Slice 0 decisions and validation trail)
+- `docs/archive/Native_Assessment.md` (assumption pressure-test results)
+- `docs/operations/progress.md` (implemented Slice 0 decisions and validation trail)
 
 ## Mission
 Build a maintainable, verifiable .NET port that can track upstream Docling changes with low friction.
@@ -26,9 +26,9 @@ Work rules:
 3. When touching a low-level area, proactively complete adjacent work in that same area if it reduces future churn.
 4. Prefer **binary-first/native interop** over re-implementing proven native parser internals.
 5. Every feature must include at least one executable verification path (smoke test, regression check, or parity test).
-6. Keep decisions and results logged in `docs/05_Operations/Progress/progress.md`.
+6. Keep decisions and results logged in `docs/operations/progress.md`.
 7. Do not claim parity without an explicit output comparison artifact.
-8. Use lean documentation by default: per-iteration summary in `docs/05_Operations/Progress/progress.md`; only update `docs/`/`docs/CHANGELOG.md` for milestone or contract/workflow changes.
+8. Use lean documentation by default: per-iteration summary in `docs/operations/progress.md`; only update `docs/`/`docs/CHANGELOG.md` for milestone or contract/workflow changes.
 
 ## Priority ladder (authoritative)
 - `P0`: Native interop foundation (C ABI packaging/loading/testing)
@@ -45,7 +45,7 @@ Work rules:
 - Initial corpus parity harness exists at:
   - `dotnet/tools/DoclingParityHarness/`
   - `scripts/run-docling-parity-harness.ps1`
-  - mechanism doc: `docs/03_Execution/Parity_Mechanism.md`
+  - mechanism doc: `docs/operations/Parity_Mechanism.md`
 - CI runs baseline parity and uploads report artifact:
   - `.github/workflows/slice0-ci.yml`
   - artifact `parity-report-win-x64`
@@ -96,9 +96,9 @@ Work rules:
 
 ## How to determine what work is done
 Use these status sources in order:
-1. `docs/06_Backlog/Future_Stories.md`:
+1. `docs/Future_Stories.md`:
    - Story status (`Planned`, `Implemented`, etc.).
-2. `docs/05_Operations/Progress/progress.md`:
+2. `docs/operations/progress.md`:
    - Command evidence, implementation notes, validation outcomes.
 3. `docs/CHANGELOG.md`:
    - High-level record of added/changed capabilities.
@@ -106,19 +106,19 @@ Use these status sources in order:
    - Commit-level audit trail.
 
 Before parity-related edits:
-- Read `docs/03_Execution/Parity_Mechanism.md` first to confirm scope, runtime location, and thresholds.
+- Read `docs/operations/Parity_Mechanism.md` first to confirm scope, runtime location, and thresholds.
 
 A work item is considered done only if all are true:
 - Status reflected in docs/backlog.
-- Execution evidence exists in `docs/05_Operations/Progress/progress.md`.
+- Execution evidence exists in `docs/operations/progress.md`.
 - Relevant validation commands passed.
 - Changelog updated for notable milestone/contract/workflow changes.
 
 ## How to determine what to do next
 Selection algorithm:
 1. Read the priority ladder (`P0` -> `P5`) and choose the lowest incomplete layer.
-2. In `docs/06_Backlog/Future_Stories.md`, select the highest-priority story still marked `Planned`.
-3. Confirm no blocker in `docs/05_Operations/Progress/progress.md`.
+2. In `docs/Future_Stories.md`, select the highest-priority story still marked `Planned`.
+3. Confirm no blocker in `docs/operations/progress.md`.
 4. Define acceptance criteria before coding.
 5. Execute one vertical slice increment, then re-evaluate.
 
@@ -127,22 +127,22 @@ When uncertain between two candidates:
 
 ## Status quick-check commands
 ```powershell
-rg -n "Status:" docs/06_Backlog/Future_Stories.md docs/06_Backlog/Future_Stories.md
-rg -n "Validation|pass|failed|Next slice|Current execution target" docs/05_Operations/Progress/progress.md
+rg -n "Status:" docs/Future_Stories.md docs/Future_Stories.md
+rg -n "Validation|pass|failed|Next slice|Current execution target" docs/operations/progress.md
 git log --oneline -n 20
 ```
 
 ## Required execution checklist per change
-1. Update plan/progress in `docs/05_Operations/Progress/progress.md` before substantial edits.
+1. Update plan/progress in `docs/operations/progress.md` before substantial edits.
 2. Implement smallest coherent vertical slice increment.
 3. Run executable validation (at minimum):
    - `dotnet build dotnet/DoclingDotNet.Examples.slnx`
    - `powershell -ExecutionPolicy Bypass -File .\scripts\test-docling-parse-cabi-smoke.ps1`
   - `powershell -ExecutionPolicy Bypass -File .\scripts\run-docling-parity-harness.ps1 -SkipConfigure -Output .artifacts/parity/docling-parse-parity-report.json -MaxOcrDrift 0 --max-pages 20`
-4. Document results and any regressions in `docs/05_Operations/Progress/progress.md`.
-5. If behavior changes, update `docs/04_Assessment/Native_Assessment.md` or `docs/README.md` accordingly.
+4. Document results and any regressions in `docs/operations/progress.md`.
+5. If behavior changes, update `docs/archive/Native_Assessment.md` or `docs/README.md` accordingly.
 6. Follow lean docs policy:
-   - always add concise `Changed / Validation / Next` summary to `docs/05_Operations/Progress/progress.md`
+   - always add concise `Changed / Validation / Next` summary to `docs/operations/progress.md`
    - update `docs/` and `docs/CHANGELOG.md` only for milestone or contract/workflow changes
    - follow `.agent/skills/docs-vault-maintainer/SKILL.md` and `.agent/skills/lean-iteration-logging/SKILL.md`
 7. If upstream ignored sources (`upstream/**`) were changed:
@@ -152,7 +152,7 @@ git log --oneline -n 20
    - optionally preflight first with `-DryRun`
    - run `scripts/fetch-latest-and-port-docling-parse.ps1`
    - ensure baseline metadata is updated and committed
-   - record upgrade outcomes in `docs/05_Operations/Progress/progress.md`
+   - record upgrade outcomes in `docs/operations/progress.md`
 9. If analyzing upstream Python Docling drift for a port pass:
    - run `scripts/report-docling-upstream-delta.ps1`
    - capture generated artifacts under `.artifacts/upstream-delta/docling/`
@@ -167,4 +167,4 @@ git log --oneline -n 20
 
 ## Future story anchor (must preserve)
 Implement and maintain a **Docling parity harness** that compares .NET outputs against upstream Python Docling outputs for the same corpus and versions.  
-Track this in `docs/06_Backlog/Future_Stories.md` and keep it active whenever upstream Docling versions change.
+Track this in `docs/Future_Stories.md` and keep it active whenever upstream Docling versions change.

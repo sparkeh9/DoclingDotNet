@@ -47,4 +47,18 @@ jobs:
 
       - name: Publish to NuGet.org
         shell: pwsh
-        run: dotnet nuget push ".artifacts/nupkg/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: |
+          $pkg = Get-ChildItem ".artifacts/nupkg/*.nupkg" | Select-Object -First 1
+          Write-Host "Package to push: $($pkg.FullName)"
+          Write-Host "Package size: $($pkg.Length) bytes"
+          try {
+            dotnet nuget push $pkg.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate 2>&1 | Tee-Object -Variable pushOutput
+            Write-Host "Push output: $pushOutput"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "dotnet nuget push failed with exit code $LASTEXITCODE"
+              exit $LASTEXITCODE
+            }
+          } catch {
+            Write-Error "Exception during push: $_"
+            exit 1
+          }

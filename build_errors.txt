@@ -1,0 +1,31 @@
+  Determining projects to restore...
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.Linux (>= 135.0.7024) but bblanchon.PDFium.Linux 135.0.7024 was not found. bblanchon.PDFium.Linux 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.macOS (>= 135.0.7024) but bblanchon.PDFium.macOS 135.0.7024 was not found. bblanchon.PDFium.macOS 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.Win32 (>= 135.0.7024) but bblanchon.PDFium.Win32 135.0.7024 was not found. bblanchon.PDFium.Win32 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1903: Package 'System.IO.Packaging' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-f32c-w444-8ppv
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1903: Package 'System.IO.Packaging' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj
+  All projects are up-to-date for restore.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.Linux (>= 135.0.7024) but bblanchon.PDFium.Linux 135.0.7024 was not found. bblanchon.PDFium.Linux 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.macOS (>= 135.0.7024) but bblanchon.PDFium.macOS 135.0.7024 was not found. bblanchon.PDFium.macOS 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.Win32 (>= 135.0.7024) but bblanchon.PDFium.Win32 135.0.7024 was not found. bblanchon.PDFium.Win32 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1903: Package 'System.IO.Packaging' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-f32c-w444-8ppv
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1903: Package 'System.IO.Packaging' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\Pipeline\DoclingAudioConversionRunner.cs(183,33): error CS0117: 'PdfPageGeometryDto' does not contain a definition for 'PageNo' [d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj]
+
+Build FAILED.
+
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.Linux (>= 135.0.7024) but bblanchon.PDFium.Linux 135.0.7024 was not found. bblanchon.PDFium.Linux 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.macOS (>= 135.0.7024) but bblanchon.PDFium.macOS 135.0.7024 was not found. bblanchon.PDFium.macOS 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.Win32 (>= 135.0.7024) but bblanchon.PDFium.Win32 135.0.7024 was not found. bblanchon.PDFium.Win32 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1903: Package 'System.IO.Packaging' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-f32c-w444-8ppv
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1903: Package 'System.IO.Packaging' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.Linux (>= 135.0.7024) but bblanchon.PDFium.Linux 135.0.7024 was not found. bblanchon.PDFium.Linux 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.macOS (>= 135.0.7024) but bblanchon.PDFium.macOS 135.0.7024 was not found. bblanchon.PDFium.macOS 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1603: DoclingDotNet depends on bblanchon.PDFium.Win32 (>= 135.0.7024) but bblanchon.PDFium.Win32 135.0.7024 was not found. bblanchon.PDFium.Win32 135.0.7033 was resolved instead.
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1903: Package 'System.IO.Packaging' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-f32c-w444-8ppv
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj : warning NU1903: Package 'System.IO.Packaging' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj
+d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\Pipeline\DoclingAudioConversionRunner.cs(183,33): error CS0117: 'PdfPageGeometryDto' does not contain a definition for 'PageNo' [d:\code\sparkeh9\doclingdotnet\dotnet\src\DoclingDotNet\DoclingDotNet.csproj]
+    10 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.72

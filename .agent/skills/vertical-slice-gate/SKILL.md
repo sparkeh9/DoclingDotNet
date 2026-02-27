@@ -15,7 +15,7 @@ description: "Enforce bottom-up vertical-slice completion checks before advancin
 3. Run mandatory checks:
    - build/regression command(s)
    - slice smoke test(s)
-4. Log evidence in `docs/05_Operations/Progress/progress.md`.
+4. Log evidence in `docs/operations/progress.md`.
 5. Only then move to next layer.
 
 ## Required checks in this repo (minimum)

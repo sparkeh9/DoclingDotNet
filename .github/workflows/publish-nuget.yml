@@ -1,0 +1,49 @@
+name: Publish NuGet
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag -replace '^v', ''
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+          echo "Resolved version: $version"
+
+      - name: Initialize workspace dependencies
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\scripts\init-workspace.ps1
+
+      - name: Build
+        run: dotnet build dotnet/DoclingDotNet.slnx --configuration Release -p:VERSION=${{ env.VERSION }}
+
+      - name: Pack
+        run: dotnet pack dotnet/src/DoclingDotNet/DoclingDotNet.csproj --configuration Release --no-build -p:VERSION=${{ env.VERSION }} -o .artifacts/nupkg
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: doclingdotnet-nupkg-${{ env.VERSION }}
+          path: .artifacts/nupkg
+
+      - name: Publish to NuGet.org
+        run: dotnet nuget push ".artifacts/nupkg/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

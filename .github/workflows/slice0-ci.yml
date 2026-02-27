@@ -31,7 +31,7 @@ jobs:
         run: dotnet build dotnet/DoclingDotNet.Examples.slnx --configuration Release
 
       - name: Pack DoclingDotNet NuGet
-        run: dotnet pack dotnet/src/DoclingDotNet/DoclingDotNet.csproj --configuration Release -o .artifacts/nupkg
+        run: dotnet pack dotnet/src/DoclingDotNet/DoclingDotNet.csproj --configuration Release --no-build -p:VERSION=0.0.0-ci -o .artifacts/nupkg
 
       - name: Upload NuGet Package
         uses: actions/upload-artifact@v4

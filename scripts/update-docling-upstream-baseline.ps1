@@ -69,19 +69,19 @@ $upstreamBranch = Get-GitValue -RepoPath $upstreamRepo -Arguments @("branch", "-
 $rootRepoCommit = Get-GitValue -RepoPath $repoRoot -Arguments @("rev-parse", "HEAD") -AllowFailure
 
 $metadata = [ordered]@{
-    schema_version = 1
-    updated_at_utc = (Get-Date).ToUniversalTime().ToString("o")
-    upstream_repository = $upstreamRemote
-    upstream_repository_local_path = $upstreamRepo
-    upstream_branch = $upstreamBranch
-    baseline_ported_ref = $PortedRef
-    baseline_ported_commit = $portedCommit
-    tracked_ref = $TrackedRef
-    tracked_ref_commit = $trackedRefCommit
-    behavioral_equivalence_status = $EquivalenceStatus
-    behavioral_equivalence_scope = $EquivalenceScope
-    behavioral_evidence_artifacts = $EvidenceArtifacts
-    root_repo_commit = $rootRepoCommit
+    schema_version                 = 1
+    updated_at_utc                 = (Get-Date).ToUniversalTime().ToString("o")
+    upstream_repository            = $upstreamRemote
+    upstream_repository_local_path = $UpstreamRepoPath
+    upstream_branch                = $upstreamBranch
+    baseline_ported_ref            = $PortedRef
+    baseline_ported_commit         = $portedCommit
+    tracked_ref                    = $TrackedRef
+    tracked_ref_commit             = $trackedRefCommit
+    behavioral_equivalence_status  = $EquivalenceStatus
+    behavioral_equivalence_scope   = $EquivalenceScope
+    behavioral_evidence_artifacts  = $EvidenceArtifacts
+    root_repo_commit               = $rootRepoCommit
 }
 
 $metadata | ConvertTo-Json -Depth 4 | Set-Content -Path $outputFile -Encoding UTF8

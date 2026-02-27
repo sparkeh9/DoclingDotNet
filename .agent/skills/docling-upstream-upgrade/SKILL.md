@@ -24,7 +24,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\fetch-latest-and-port-docling
 3. Reapply local port delta onto target upstream commit.
 4. Run validation gates (tests, smoke, parity, patch check).
 5. Update baseline metadata (`patches/docling-parse/upstream-baseline.json`).
-6. Log outcomes in `docs/05_Operations/Progress/progress.md`.
+6. Log outcomes in `docs/operations/progress.md`.
 7. Update docs/changelog when workflow/script behavior changes.
 
 ## Safe debug modes
@@ -38,6 +38,6 @@ powershell -ExecutionPolicy Bypass -File .\scripts\fetch-latest-and-port-docling
   - `-KeepTempOnFailure`
 
 ## Required evidence after run
-- Validation command outcomes recorded in `docs/05_Operations/Progress/progress.md`.
+- Validation command outcomes recorded in `docs/operations/progress.md`.
 - Baseline metadata file updated.
 - `docs/CHANGELOG.md` updated for workflow/script changes.

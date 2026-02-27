@@ -58,17 +58,17 @@ if (Test-Path $patchFile) {
 }
 
 $metadata = [ordered]@{
-    schema_version = 1
-    updated_at_utc = (Get-Date).ToUniversalTime().ToString("o")
-    upstream_repository = $upstreamRemote
-    upstream_repository_local_path = $upstreamRepo
-    upstream_branch = $upstreamBranch
-    upstream_head_commit = $upstreamHead
-    tracked_ref = $TrackedRef
-    tracked_ref_commit = $trackedRefCommit
-    patch_file = $PatchPath
-    patch_sha256 = $patchSha256
-    root_repo_commit = $rootRepoCommit
+    schema_version                 = 1
+    updated_at_utc                 = (Get-Date).ToUniversalTime().ToString("o")
+    upstream_repository            = $upstreamRemote
+    upstream_repository_local_path = "upstream/deps/docling-parse"
+    upstream_branch                = $upstreamBranch
+    upstream_head_commit           = $upstreamHead
+    tracked_ref                    = $TrackedRef
+    tracked_ref_commit             = $trackedRefCommit
+    patch_file                     = $PatchPath
+    patch_sha256                   = $patchSha256
+    root_repo_commit               = $rootRepoCommit
 }
 
 $metadata | ConvertTo-Json -Depth 4 | Set-Content -Path $outputFile -Encoding UTF8

@@ -27,7 +27,7 @@ description: "Recover from hung command sessions using targeted process discover
 - Log what was terminated and why.
 
 ## Repository reference
-- Used during post-clean smoke test recovery in `docs/05_Operations/Progress/progress.md`.
+- Used during post-clean smoke test recovery in `docs/operations/progress.md`.
 
 ## Exit criteria
 - Hung process is cleared.

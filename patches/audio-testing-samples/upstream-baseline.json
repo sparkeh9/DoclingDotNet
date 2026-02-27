@@ -2,7 +2,7 @@
     "schema_version": 1,
     "updated_at_utc": "2026-02-22T00:00:00.0000000Z",
     "upstream_repository": "https://github.com/voxserv/audio_quality_testing_samples.git",
-    "upstream_repository_local_path": "D:\\code\\sparkeh9\\doclingdotnet\\upstream\\audio-testing-samples",
+    "upstream_repository_local_path": "upstream/audio-testing-samples",
     "upstream_branch": "master",
     "upstream_head_commit": "bbc4841fd1c8d89d2640288bca380db2169c622f"
 }

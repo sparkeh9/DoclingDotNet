@@ -7,7 +7,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>DoclingDotNet</PackageId>
-    <Version>1.0.0-beta</Version>
+    <Version Condition="'$(VERSION)' != ''">$(VERSION)</Version>
+    <Version Condition="'$(VERSION)' == ''">1.0.0-dev</Version>
     <Authors>DoclingDotNet Contributors</Authors>
     <Description>A high-performance, pure-managed .NET port of the Docling document parsing library. Extracts structured semantic data from PDFs, DOCX, PPTX, HTML, EPUB, and more.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

@@ -2,7 +2,7 @@
     "schema_version":  1,
     "updated_at_utc":  "2026-02-20T19:07:58.1789404Z",
     "upstream_repository":  "https://github.com/docling-project/docling.git",
-    "upstream_repository_local_path":  "D:\\code\\sparkeh9\\doclingdotnet\\upstream\\docling",
+    "upstream_repository_local_path":  "upstream/docling",
     "upstream_branch":  "main",
     "baseline_ported_ref":  "HEAD",
     "baseline_ported_commit":  "684f59f263094622ee976886d0ce229d1952dd41",

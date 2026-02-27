@@ -1,6 +1,6 @@
 ---
 name: lean-iteration-logging
-description: "Enforce concise iteration logging: summary entry in docs/05_Operations/Progress/progress.md, minimal docs/changelog churn."
+description: "Enforce concise iteration logging: summary entry in docs/operations/progress.md, minimal docs/changelog churn."
 ---
 
 # Lean Iteration Logging
@@ -10,7 +10,7 @@ description: "Enforce concise iteration logging: summary entry in docs/05_Operat
 - Normal iteration closeout for this repository.
 
 ## Rule
-For each iteration, update only `docs/05_Operations/Progress/progress.md` with:
+For each iteration, update only `docs/operations/progress.md` with:
 1. `Changed`
 2. `Validation`
 3. `Next`
@@ -27,5 +27,5 @@ Update `docs/` and `docs/CHANGELOG.md` only if the iteration changes:
 - Duplicating detailed implementation notes across multiple docs.
 
 ## Completion gate
-- Iteration has one concise entry in `docs/05_Operations/Progress/progress.md`.
+- Iteration has one concise entry in `docs/operations/progress.md`.
 - Additional docs/changelog updates were made only if escalation criteria were met.

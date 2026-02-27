@@ -57,7 +57,7 @@ public sealed class WhisperNetAsrProvider : IDoclingAsrProvider, IDisposable
             ));
         }
 
-        return new AsrExecutionResult(segments, Name, "en");
+        return new AsrExecutionResult(segments, Name, _language);
     }
 
     public void Dispose()

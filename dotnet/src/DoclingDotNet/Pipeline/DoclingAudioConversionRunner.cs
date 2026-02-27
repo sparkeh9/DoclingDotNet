@@ -18,13 +18,41 @@ public static class AudioConversionStageNames
     public const string HydrateDocument = "hydrate_document";
 }
 
+/// <summary>
+/// Declares the format of the audio input so the pipeline knows whether transcoding is needed.
+/// </summary>
+public enum AudioInputFormat
+{
+    /// <summary>
+    /// The input is an arbitrary audio format (MP3, M4A, WAV, FLAC, etc.).
+    /// The pipeline will transcode it to 16kHz 16-bit Mono PCM via FFmpeg before passing to Whisper.
+    /// This is the safe default for any input source.
+    /// </summary>
+    Auto = 0,
+
+    /// <summary>
+    /// The caller guarantees the input is already 16kHz 16-bit Mono PCM WAV.
+    /// The pipeline will pass it directly to Whisper without transcoding.
+    /// Use this only when you control the audio source and know its exact format.
+    /// </summary>
+    RawPcm16kMono = 1
+}
+
 public sealed class AudioConversionRequest
 {
     public string? FilePath { get; init; }
     public Stream? InputStream { get; init; }
+
+    /// <summary>
+    /// Declares the format of the audio input. Defaults to <see cref="AudioInputFormat.Auto"/>,
+    /// which transcodes all inputs (files and streams) to Whisper-compatible PCM via FFmpeg.
+    /// Set to <see cref="AudioInputFormat.RawPcm16kMono"/> only if the input is already 16kHz 16-bit Mono PCM.
+    /// </summary>
+    public AudioInputFormat InputFormat { get; init; } = AudioInputFormat.Auto;
+
     public string? RunId { get; init; }
     public string? DocumentKey { get; init; }
-    public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(300); // Transcription takes longer than typical PDF conversion
+    public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(300);
     public IDoclingAsrProvider? AsrProvider { get; init; }
 }
 
@@ -101,17 +129,31 @@ public sealed class DoclingAudioConversionRunner
                     Name = AudioConversionStageNames.LoadAudio,
                     ExecuteAsync = async (_, token) =>
                     {
+                        Stream rawInput;
                         if (request.InputStream != null)
                         {
-                            // If a stream is provided directly, we assume it's natively PCM. 
-                            audioStream = request.InputStream;
+                            rawInput = request.InputStream;
                         }
                         else
                         {
-                            // Always transcode files (even .wav) to 16kHz Mono PCM via FFmpeg. 
-                            // Whisper natively requires 16KHz 16-bit Mono and will crash otherwise.
-                            using var fs = File.OpenRead(request.FilePath!);
-                            audioStream = await AudioTranscoder.NormalizeToWhisperPcmAsync(fs, token).ConfigureAwait(false);
+                            rawInput = File.OpenRead(request.FilePath!);
+                        }
+
+                        if (request.InputFormat == AudioInputFormat.RawPcm16kMono)
+                        {
+                            // Caller guarantees this is already 16kHz 16-bit Mono PCM — skip transcoding.
+                            audioStream = rawInput;
+                        }
+                        else
+                        {
+                            // Transcode any format (MP3, M4A, WAV, FLAC, etc.) to Whisper-compatible PCM via FFmpeg.
+                            audioStream = await AudioTranscoder.NormalizeToWhisperPcmAsync(rawInput, token).ConfigureAwait(false);
+
+                            // If we opened a file stream for transcoding, dispose it now — the output is a new MemoryStream.
+                            if (request.InputStream == null)
+                            {
+                                rawInput.Dispose();
+                            }
                         }
                     }
                 },

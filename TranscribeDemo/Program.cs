@@ -12,7 +12,8 @@ class Program
     {
         Console.WriteLine("Initializing DoclingDotNet with Whisper.net...");
 
-        var rootDir = @"d:\code\sparkeh9\doclingdotnet";
+        // Resolve repo root dynamically from the build output directory.
+        var rootDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
         var modelPath = Path.Combine(rootDir, "dotnet", "tests", "DoclingDotNet.Tests", "Assets", "ggml-tiny.en.bin");
         var audioSamplePath = Path.Combine(rootDir, "TranscribeDemo", "blindfury_clip.wav");
 

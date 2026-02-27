@@ -1,4 +1,5 @@
 param(
+    [string]$UpstreamRepoPath = "upstream/deps/docling-parse",
     [string]$OutputPath = "patches/docling-parse/upstream-baseline.json",
     [string]$PatchPath = "patches/docling-parse/0001-docling-parse-cabi-foundation-and-segmented-runtime.patch",
     [string]$TrackedRef = "origin/main"
@@ -35,7 +36,7 @@ function Get-GitValue {
 }
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$upstreamRepo = Join-Path $repoRoot "upstream\deps\docling-parse"
+$upstreamRepo = Join-Path $repoRoot $UpstreamRepoPath
 $outputFile = Join-Path $repoRoot $OutputPath
 $patchFile = Join-Path $repoRoot $PatchPath
 
@@ -61,7 +62,7 @@ $metadata = [ordered]@{
     schema_version                 = 1
     updated_at_utc                 = (Get-Date).ToUniversalTime().ToString("o")
     upstream_repository            = $upstreamRemote
-    upstream_repository_local_path = "upstream/deps/docling-parse"
+    upstream_repository_local_path = $UpstreamRepoPath
     upstream_branch                = $upstreamBranch
     upstream_head_commit           = $upstreamHead
     tracked_ref                    = $TrackedRef

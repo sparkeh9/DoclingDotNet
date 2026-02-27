@@ -192,7 +192,7 @@ Remaining:
 - No open P3 OCR substrate gaps currently tracked; continue broader parity depth under FS-001/P4.
 
 ### FS-007 - .NET ASR Pipeline (Audio Transcription)
-Status: Planned  
+Status: Implemented  
 Priority: Medium
 
 Deliver:

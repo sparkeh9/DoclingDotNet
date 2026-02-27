@@ -92,6 +92,21 @@ public sealed class DoclingAudioConversionRunner
         var pages = new List<SegmentedPdfPageDto>();
         string? providerName = null;
 
+        // Validate FilePath to prevent path traversal and UNC-based attacks.
+        if (!string.IsNullOrWhiteSpace(request.FilePath))
+        {
+            var fullPath = Path.GetFullPath(request.FilePath);
+            if (fullPath.StartsWith(@"\\", StringComparison.Ordinal))
+            {
+                throw new ArgumentException("UNC paths are not permitted for audio input.", nameof(request));
+            }
+
+            if (!File.Exists(fullPath))
+            {
+                throw new FileNotFoundException($"Audio file not found: {fullPath}", fullPath);
+            }
+        }
+
         Stream? audioStream = null;
         AsrExecutionResult? asrResult = null;
 

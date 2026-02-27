@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,12 +42,19 @@ internal static class AudioTranscoder
 
             if (!result)
             {
+                outputStream.Dispose();
                 throw new InvalidOperationException("FFmpeg failed to process the audio stream.");
             }
         }
-        catch (System.ComponentModel.Win32Exception ex) when (ex.Message.Contains("The system cannot find the file specified"))
+        catch (Win32Exception ex) when (ex.NativeErrorCode == 2) // ERROR_FILE_NOT_FOUND
         {
+            outputStream.Dispose();
             throw new InvalidOperationException("FFmpeg is not installed or not available on the system PATH. Transcoding multi-format audio requires FFmpeg.", ex);
+        }
+        catch
+        {
+            outputStream.Dispose();
+            throw;
         }
 
         outputStream.Position = 0; // Reset position so it's ready for downstream reading

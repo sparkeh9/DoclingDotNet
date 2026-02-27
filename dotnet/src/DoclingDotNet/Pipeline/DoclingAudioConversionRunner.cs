@@ -243,7 +243,7 @@ public sealed class DoclingAudioConversionRunner
                             },
                             TextlineCells = cells,
                             HasLines = cells.Count > 0,
-                            HasWords = cells.Count > 0
+                            HasWords = false // WordCells is not populated in the audio path
                         };
 
                         pages.Add(page);

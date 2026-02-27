@@ -3,7 +3,7 @@ name: Publish NuGet
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 jobs:
   publish:
@@ -31,7 +31,7 @@ jobs:
 
       - name: Initialize workspace dependencies
         shell: pwsh
-        run: powershell -ExecutionPolicy Bypass -File .\scripts\init-workspace.ps1
+        run: pwsh -ExecutionPolicy Bypass -File .\scripts\init-workspace.ps1
 
       - name: Build
         run: dotnet build dotnet/DoclingDotNet.slnx --configuration Release -p:VERSION=${{ env.VERSION }}

@@ -142,7 +142,7 @@ var result = await pdfRunner.ExecuteAsync(request);
 DoclingDotNet supports audio transcription natively using `Whisper.net`, completely bypassing Python for extreme inference performance. Just like the PDF conversion pipeline, audio extraction maps directly into the standard `DoclingDocument` JSON structures (with `TrackSource` metadata encoding start/end timestamps).
 
 > [!NOTE]
-> Converting from non-WAV formats (MP4, MP3, FLAC, M4A) requires `ffmpeg` to be installed on the host system and available in the `$PATH`. If `ffmpeg` is missing, only standard 16Hz 16-bit Mono PCM `.wav` files will process automatically.
+> Converting from non-WAV formats (MP4, MP3, FLAC, M4A) requires `ffmpeg` to be installed on the host system and available in the `$PATH`. If `ffmpeg` is missing, only standard 16 kHz (16,000 Hz) 16-bit Mono PCM `.wav` files will process automatically.
 
 **1. Install `Whisper.net`:**
 ```xml

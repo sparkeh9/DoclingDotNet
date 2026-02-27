@@ -20,7 +20,7 @@ It features a completely managed pipeline with native support for structured for
 ## Start Here
 - 🚀 **[Quick Start & Usage Guide](docs/USAGE.md)**: Learn how to convert documents, enable AI layouts, and extract Markdown/HTML.
 - ⚡ **[Benchmarks (Speed & Accuracy)](BENCHMARK.md)**: See the empirical speedup metrics and semantic parity guarantees.
-- 🏗️ **[The Strangler Fig Architecture](docs/02_Architecture/Strangler_Fig_Porting.md)**: Read how we safely ported a massive Python monolith to .NET without breaking behavior.
+- 🏗️ **[The Strangler Fig Architecture](docs/architecture/Strangler_Fig_Porting.md)**: Read how we safely ported a massive Python monolith to .NET without breaking behavior.
 
 ## The Strangler Fig Porting Method
 To safely port the massive Python and C++ ecosystem to .NET without breaking functionality, we utilized the **Strangler Fig Pattern**. 
@@ -32,7 +32,7 @@ Instead of a complete rewrite, we established an immutable JSON data contract (`
 
 By validating every slice with an automated **Semantic Parity Harness**, we guaranteed that the .NET port remained 100% behaviorally identical to the upstream Python logic at every step, while allowing us to ruthlessly optimize for C# performance. 
 
-You can read the full case study here: [**Strangling the Python Monolith to High-Performance .NET**](docs/02_Architecture/Strangler_Fig_Porting.md).
+You can read the full case study here: [**Strangling the Python Monolith to High-Performance .NET**](docs/architecture/Strangler_Fig_Porting.md).
 
 ## Key Features
 
@@ -60,10 +60,10 @@ Console.WriteLine(markdown);
 
 ## Contributing and Architecture
 If you are contributing to the core engine, please review the internal architectural documentation:
-- Project context & overview: `docs/01_Context/Project_Overview.md`
-- Current implementation state: `docs/01_Context/Current_State.md`
-- Parity Mechanism (How CI blocks drift): `docs/03_Execution/Parity_Mechanism.md`
-- Main docs index: `docs/00_Index/Map_of_Content.md`
+- Project context & overview: `docs/archive/Project_Overview.md`
+- Current implementation state: `docs/archive/Current_State.md`
+- Parity Mechanism (How CI blocks drift): `docs/operations/Parity_Mechanism.md`
+- Main docs index: `docs/README.md`
 
 ## Core Validation
 If you are developing locally, ensure the Semantic Parity Harness passes against the ground truth corpus before opening a Pull Request:

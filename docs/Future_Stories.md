@@ -1,6 +1,6 @@
 # Future Stories
 
-Primary source: `docs/06_Backlog/Future_Stories.md`
+Primary source: `docs/Future_Stories.md`
 
 ## FS-001 - Upstream Docling parity harness (version-to-version)
 Status: Implemented (phase 10)  

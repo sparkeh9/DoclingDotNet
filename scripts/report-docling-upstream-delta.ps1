@@ -108,14 +108,14 @@ if (-not (Test-Path $baselineFile)) {
         -Name "Initialize missing baseline to target commit" `
         -FilePath $powerShellHost `
         -Arguments @(
-            "-ExecutionPolicy", "Bypass",
-            "-File", $baselineScript,
-            "-UpstreamRepoPath", $UpstreamRepoPath,
-            "-OutputPath", $BaselinePath,
-            "-PortedRef", $targetCommit,
-            "-TrackedRef", $TargetRef,
-            "-SkipFetch"
-        )
+        "-ExecutionPolicy", "Bypass",
+        "-File", $baselineScript,
+        "-UpstreamRepoPath", $UpstreamRepoPath,
+        "-OutputPath", $BaselinePath,
+        "-PortedRef", $targetCommit,
+        "-TrackedRef", $TargetRef,
+        "-SkipFetch"
+    )
 }
 
 $baseline = Get-Content $baselineFile -Raw | ConvertFrom-Json
@@ -153,10 +153,10 @@ foreach ($line in $commitLines) {
     }
 
     $commitObjects += [ordered]@{
-        commit = $parts[0]
+        commit   = $parts[0]
         date_utc = $parts[1]
-        author = $parts[2]
-        subject = $parts[3]
+        author   = $parts[2]
+        subject  = $parts[3]
     }
 }
 
@@ -178,7 +178,7 @@ foreach ($line in $fileLines) {
 
     $fileObjects += [ordered]@{
         status = $parts[0]
-        path = $parts[1]
+        path   = $parts[1]
     }
 }
 
@@ -204,26 +204,26 @@ if ($LASTEXITCODE -ne 0) {
 $patchLines | Set-Content -Path $patchPath -Encoding UTF8
 
 $summary = [ordered]@{
-    generated_at_utc = (Get-Date).ToUniversalTime().ToString("o")
-    upstream_repository = (Get-GitValue -RepoPath $upstreamRepo -Arguments @("remote", "get-url", "origin") -AllowFailure)
-    upstream_repo_path = $upstreamRepo
-    baseline_file = $BaselinePath
-    baseline_ported_commit = $baselineCommit
+    generated_at_utc                       = (Get-Date).ToUniversalTime().ToString("o")
+    upstream_repository                    = (Get-GitValue -RepoPath $upstreamRepo -Arguments @("remote", "get-url", "origin") -AllowFailure)
+    upstream_repo_path                     = $upstreamRepo
+    baseline_file                          = $BaselinePath
+    baseline_ported_commit                 = $baselineCommit
     baseline_behavioral_equivalence_status = $baseline.behavioral_equivalence_status
-    baseline_behavioral_equivalence_scope = $baseline.behavioral_equivalence_scope
+    baseline_behavioral_equivalence_scope  = $baseline.behavioral_equivalence_scope
     baseline_behavioral_evidence_artifacts = $baseline.behavioral_evidence_artifacts
-    target_ref = $TargetRef
-    target_commit = $targetCommit
-    commits_ahead = $aheadCount
-    commits_behind = $behindCount
-    changed_file_count = $fileObjects.Count
-    artifacts = [ordered]@{
-        patch_file = $patchPath
-        summary_markdown = $summaryMarkdownPath
+    target_ref                             = $TargetRef
+    target_commit                          = $targetCommit
+    commits_ahead                          = $aheadCount
+    commits_behind                         = $behindCount
+    changed_file_count                     = $fileObjects.Count
+    artifacts                              = [ordered]@{
+        patch_file          = $patchPath
+        summary_markdown    = $summaryMarkdownPath
         llm_prompt_markdown = $llmPromptPath
     }
-    commits = $commitObjects
-    changed_files = $fileObjects
+    commits                                = $commitObjects
+    changed_files                          = $fileObjects
 }
 
 $summary | ConvertTo-Json -Depth 8 | Set-Content -Path $summaryJsonPath -Encoding UTF8
@@ -301,7 +301,7 @@ $llmPrompt += "1. Analyze upstream changes and map them to impacted .NET areas (
 $llmPrompt += "2. Implement behavior changes so .NET contracts/parity remain aligned with upstream semantics."
 $llmPrompt += "3. Add or update tests for each behavior change."
 $llmPrompt += "4. Run validation commands and provide pass/fail evidence."
-$llmPrompt += "5. Update docs (docs/**, docs/05_Operations/Progress/progress.md, docs/CHANGELOG.md) with what changed and why."
+$llmPrompt += "5. Update docs (docs/**, docs/operations/progress.md, docs/CHANGELOG.md) with what changed and why."
 $llmPrompt += "6. If a change cannot be ported exactly, document gap + mitigation explicitly."
 $llmPrompt += ""
 $llmPrompt += "## Validation commands"

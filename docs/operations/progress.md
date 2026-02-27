@@ -7,7 +7,7 @@ Workspace: `D:\code\sparkeh9\doclingdotnet`
 - One entry per iteration.
 - Keep each entry concise: `Changed`, `Validation`, `Next`.
 - Detailed/legacy log is archived at:
-  - `docs/05_Operations/Progress/archive/progress_verbose_2026-02-20.md`
+  - `docs/operations/progress_archive/progress_verbose_2026-02-20.md`
 
 ## Milestone Summary (Compacted)
 1. Native viability spikes completed (ONNX/PDFium/Tesseract via prebuilt binaries).
@@ -75,12 +75,12 @@ Workspace: `D:\code\sparkeh9\doclingdotnet`
 
 ### 2026-02-20 21:35 - Logging Policy Cleanup
 - Changed:
-  - Compacted `docs/05_Operations/Progress/progress.md` to concise iteration summaries.
-  - Archived verbose historical log to `docs/05_Operations/Progress/archive/progress_verbose_2026-02-20.md`.
+  - Compacted `docs/operations/progress.md` to concise iteration summaries.
+  - Archived verbose historical log to `docs/operations/progress_archive/progress_verbose_2026-02-20.md`.
   - Updated policy/docs/skills for lean logging defaults:
     - `AGENTS.md`
-    - `docs/05_Operations/Documentation_Workflow.md`
-    - `docs/05_Operations/Working_Agreements.md`
+    - `docs/operations/Docling_Upstream_Delta_Workflow.md`
+    - (archived: previously `docs/05_Operations/Working_Agreements.md`)
     - `.agent/skills/docs-vault-maintainer/SKILL.md`
     - `.agent/skills/vertical-slice-gate/SKILL.md`
     - `.agent/skills/lean-iteration-logging/SKILL.md`
@@ -129,7 +129,7 @@ Workspace: `D:\code\sparkeh9\doclingdotnet`
 - Changed:
   - Created branch checkpoint `chore/parity-baseline-gate-and-deviation-plan`.
   - Added itemized strict-parity deviation remediation plan:
-    - `docs/06_Backlog/Parity_Deviation_Remediation_Plan.md`
+    - `docs/Upstream_Deviations_Registry.md`
   - Documented mismatch-code counts, impacted PDFs, prioritized work packages (WP1-WP3), and per-package verification protocol.
 - Validation:
   - Planning/docs update only; no additional runtime behavior changes in this step.

@@ -91,16 +91,16 @@ jobs:
 
       - name: Run Smoke Assertions
         shell: pwsh
-        run: pwsh -ExecutionPolicy Bypass -File ./scripts/test-docling-parse-cabi-smoke.ps1
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/test-docling-parse-cabi-smoke.ps1 -SkipConfigure -SkipBuild
 
       - name: Run parity harness (baseline corpus slice)
         shell: pwsh
-        run: pwsh -ExecutionPolicy Bypass -File ./scripts/run-docling-parity-harness.ps1 -Output .artifacts/parity/docling-parse-parity-report.baseline.${{ matrix.os }}.json -MaxOcrDrift 0 -TextMismatchSeverity Minor -GeometryMismatchSeverity Minor -ContextMismatchSeverity Minor --max-pages 20
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/run-docling-parity-harness.ps1 -SkipConfigure -SkipBuild -Output .artifacts/parity/docling-parse-parity-report.baseline.${{ matrix.os }}.json -MaxOcrDrift 0 -TextMismatchSeverity Minor -GeometryMismatchSeverity Minor -ContextMismatchSeverity Minor --max-pages 20
 
       - name: Run parity harness (strict parity lane, non-blocking)
         continue-on-error: true
         shell: pwsh
-        run: pwsh -ExecutionPolicy Bypass -File ./scripts/run-docling-parity-harness.ps1 -Output .artifacts/parity/docling-parse-parity-report.strict-geometry.${{ matrix.os }}.json -MaxOcrDrift 0 -TextMismatchSeverity Major -GeometryMismatchSeverity Major -ContextMismatchSeverity Major --max-pages 20
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/run-docling-parity-harness.ps1 -SkipConfigure -SkipBuild -Output .artifacts/parity/docling-parse-parity-report.strict-geometry.${{ matrix.os }}.json -MaxOcrDrift 0 -TextMismatchSeverity Major -GeometryMismatchSeverity Major -ContextMismatchSeverity Major --max-pages 20
 
       - name: Upload parity report artifacts
         if: always()

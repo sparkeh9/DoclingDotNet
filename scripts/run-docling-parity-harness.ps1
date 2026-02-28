@@ -2,6 +2,7 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
     [switch]$SkipConfigure,
+    [switch]$SkipBuild,
     [string]$Output = ".artifacts/parity/docling-parse-parity-report.json",
     [int]$MaxOcrDrift = 0,
     [ValidateSet("Critical", "Major", "Minor")]
@@ -37,9 +38,9 @@ function Resolve-NativeRuntimeDirectories {
     )
 
     $nativeLibrary = Get-ChildItem -Path $BuildDir -Recurse -File -ErrorAction SilentlyContinue |
-        Where-Object { $nativeLibraryNames -contains $_.Name } |
-        Sort-Object LastWriteTimeUtc -Descending |
-        Select-Object -First 1
+    Where-Object { $nativeLibraryNames -contains $_.Name } |
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 1
 
     if (-not $nativeLibrary) {
         throw "[parity] Could not locate a built docling_parse_c native library under '$BuildDir'."
@@ -49,11 +50,11 @@ function Resolve-NativeRuntimeDirectories {
     $runtimeDirs.Add($nativeLibrary.Directory.FullName)
 
     foreach ($candidate in @(
-        (Join-Path $BuildDir $Configuration),
-        $BuildDir,
-        (Join-Path $DoclingParseDir "externals/bin"),
-        (Join-Path $DoclingParseDir "externals/lib")
-    )) {
+            (Join-Path $BuildDir $Configuration),
+            $BuildDir,
+            (Join-Path $DoclingParseDir "externals/bin"),
+            (Join-Path $DoclingParseDir "externals/lib")
+        )) {
         if (-not (Test-Path $candidate)) {
             continue
         }
@@ -83,9 +84,11 @@ if (-not $SkipConfigure) {
     if ($LASTEXITCODE -ne 0) { throw "cmake configure failed" }
 }
 
-Write-Host "[parity] cmake build docling_parse_c ($Configuration)"
-& cmake --build $buildDir --config $Configuration --target docling_parse_c
-if ($LASTEXITCODE -ne 0) { throw "cmake build failed" }
+if (-not $SkipBuild) {
+    Write-Host "[parity] cmake build docling_parse_c ($Configuration)"
+    & cmake --build $buildDir --config $Configuration --target docling_parse_c
+    if ($LASTEXITCODE -ne 0) { throw "cmake build failed" }
+}
 
 $runtimeDirs = Resolve-NativeRuntimeDirectories -BuildDir $buildDir -Configuration $Configuration -DoclingParseDir $doclingParseDir
 $pathSeparator = [System.IO.Path]::PathSeparator

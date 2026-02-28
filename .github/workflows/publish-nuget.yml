@@ -24,29 +24,16 @@ jobs:
 
       - name: Build C-ABI Native Libraries
         shell: pwsh
-        run: pwsh -ExecutionPolicy Bypass -File ./scripts/build-docling-parse-cabi.ps1 -Configuration Release
-
-      - name: Gather Native Artifacts
-        shell: pwsh
-        run: |
-          $outDir = "native-artifacts"
-          New-Item -ItemType Directory -Force -Path $outDir
-
-          $cabiDir = "upstream/deps/docling-parse/build-cabi"
-          $extDir = "upstream/deps/docling-parse/externals"
-
-          # Copy everything from build-cabi
-          Copy-Item -Path "$cabiDir/*" -Destination $outDir -Recurse -Force
-
-          # Copy externals bin/lib
-          if (Test-Path "$extDir/bin") { Copy-Item -Path "$extDir/bin/*" -Destination $outDir -Recurse -Force }
-          if (Test-Path "$extDir/lib") { Copy-Item -Path "$extDir/lib/*" -Destination $outDir -Recurse -Force }
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/build-docling-parse-cabi.ps1 -Configuration Release -InstallDependencies
 
       - name: Upload Native Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: native-artifacts-${{ matrix.os }}
-          path: native-artifacts/
+          path: |
+            upstream/deps/docling-parse/build-cabi/
+            upstream/deps/docling-parse/externals/bin/
+            upstream/deps/docling-parse/externals/lib/
 
   pack-and-publish:
     needs: build-native-artifacts
@@ -76,41 +63,12 @@ jobs:
         shell: pwsh
         run: pwsh -ExecutionPolicy Bypass -File ./scripts/init-workspace.ps1
 
-      - name: Download Windows Native Artifacts
+      - name: Download All Release Artifacts for Packaging
         uses: actions/download-artifact@v4
         with:
-          name: native-artifacts-windows-latest
-          path: upstream/deps/docling-parse/build-cabi/Release
-
-      - name: Download Windows Externals (Dlls)
-        uses: actions/download-artifact@v4
-        with:
-          name: native-artifacts-windows-latest
-          path: upstream/deps/docling-parse/externals/bin
-
-      - name: Download Linux Native Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: native-artifacts-ubuntu-latest
-          path: upstream/deps/docling-parse/build-cabi
-
-      - name: Download Linux Externals (SOs)
-        uses: actions/download-artifact@v4
-        with:
-          name: native-artifacts-ubuntu-latest
-          path: upstream/deps/docling-parse/externals/lib
-
-      - name: Download macOS Native Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: native-artifacts-macos-latest
-          path: upstream/deps/docling-parse/build-cabi
-
-      - name: Download macOS Externals (Dylibs)
-        uses: actions/download-artifact@v4
-        with:
-          name: native-artifacts-macos-latest
-          path: upstream/deps/docling-parse/externals/lib
+          pattern: native-artifacts-*
+          merge-multiple: true
+          path: upstream/deps/docling-parse
 
       - name: Build
         run: dotnet build dotnet/DoclingDotNet.slnx --configuration Release -p:VERSION=${{ env.VERSION }}

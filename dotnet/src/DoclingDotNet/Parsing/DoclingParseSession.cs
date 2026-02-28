@@ -23,7 +23,17 @@ public sealed class DoclingParseSession : IDoclingParseSession
                 $"docling_parse_create failed with status {status}.");
         }
 
-        return new DoclingParseSession(handle);
+        var session = new DoclingParseSession(handle);
+
+        // Automatically configure the resources directory if it exists near the executing assembly.
+        var appDir = AppDomain.CurrentDomain.BaseDirectory;
+        var defaultResourcesPath = Path.Combine(appDir, "pdf_resources");
+        if (Directory.Exists(defaultResourcesPath))
+        {
+            session.SetResourcesDir(defaultResourcesPath);
+        }
+
+        return session;
     }
 
     public void SetLogLevel(string logLevel)

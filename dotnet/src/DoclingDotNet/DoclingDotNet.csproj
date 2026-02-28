@@ -30,4 +30,23 @@
     <PackageReference Include="Whisper.net.Runtime" Version="1.9.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\..\upstream\deps\docling-parse\build-cabi\Release\docling_parse_c.dll" PackagePath="runtimes\win-x64\native\" Pack="true" />
+    <Content Include="..\..\..\upstream\deps\docling-parse\externals\bin\*.dll" PackagePath="runtimes\win-x64\native\" Pack="true" />
+    <Content Include="..\..\..\upstream\deps\docling-parse\docling_parse\pdf_resources\**\*.*" PackagePath="content\pdf_resources\" Pack="true">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="ValidateNativeAssetsExists" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <DoclingParseCDll>..\..\..\upstream\deps\docling-parse\build-cabi\Release\docling_parse_c.dll</DoclingParseCDll>
+      <PdfResourcesDir>..\..\..\upstream\deps\docling-parse\docling_parse\pdf_resources</PdfResourcesDir>
+    </PropertyGroup>
+    
+    <Error Condition="!Exists('$(DoclingParseCDll)')" Text="Native asset not found: $(DoclingParseCDll). Please ensure docling-parse has been built." />
+    <!-- Check for at least one expected file in pdf_resources to validate the directory exists and is populated -->
+    <Error Condition="!Exists('$(PdfResourcesDir)\cmap-resources.txt')" Text="PDF resources not found: $(PdfResourcesDir). Please ensure docling-parse is updated." />
+  </Target>
+
 </Project>

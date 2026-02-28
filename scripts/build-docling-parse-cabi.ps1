@@ -23,8 +23,21 @@ if ($InstallDependencies -and $IsLinux) {
     & sudo apt-get install -y build-essential cmake
 }
 
+$cmakeArgs = @(
+    "-S", $doclingParseDir,
+    "-B", $buildDirPath,
+    "-DCMAKE_BUILD_TYPE=$Configuration",
+    "-DDOCLING_PARSE_BUILD_C_API=ON",
+    "-DDOCLING_PARSE_BUILD_PYTHON_BINDINGS=OFF"
+)
+
+if ($IsWindows) {
+    Write-Host "[build-native] Suppressing MSVC C4530 warning by injecting /EHsc..."
+    $cmakeArgs += "-DCMAKE_CXX_FLAGS=/EHsc"
+}
+
 Write-Host "[build-native] configuring CMake..."
-& cmake -S $doclingParseDir -B $buildDirPath -DCMAKE_BUILD_TYPE=$Configuration -DDOCLING_PARSE_BUILD_C_API=ON -DDOCLING_PARSE_BUILD_PYTHON_BINDINGS=OFF
+& cmake @cmakeArgs
 if ($LASTEXITCODE -ne 0) { throw "CMake configure failed" }
 
 Write-Host "[build-native] building docling_parse_c..."

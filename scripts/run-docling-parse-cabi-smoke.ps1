@@ -1,7 +1,8 @@
 param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
-    [switch]$SkipConfigure
+    [switch]$SkipConfigure,
+    [switch]$SkipBuild
 )
 
 # We use Continue here because native commands (like cmake) often write warnings 
@@ -24,13 +25,18 @@ if (-not $SkipConfigure) {
     if ($LASTEXITCODE -ne 0) { throw "cmake configure failed" }
 }
 
-Write-Host "[smoke] cmake build docling_parse_c ($Configuration)"
-& cmake --build $buildDir --config $Configuration --target docling_parse_c
-if ($LASTEXITCODE -ne 0) { throw "cmake build failed" }
+if (-not $SkipBuild) {
+    Write-Host "[smoke] cmake build docling_parse_c ($Configuration)"
+    & cmake --build $buildDir --config $Configuration --target docling_parse_c
+    if ($LASTEXITCODE -ne 0) { throw "cmake build failed" }
+}
 
-$nativeBinDir = Join-Path $buildDir $Configuration
-$externalsBinDir = Join-Path $doclingParseDir "externals\bin"
-$runtimeDirs = @($nativeBinDir, $externalsBinDir)
+$runtimeDirs = @(
+    (Join-Path $buildDir $Configuration),
+    $buildDir,
+    (Join-Path $doclingParseDir "externals/bin"),
+    (Join-Path $doclingParseDir "externals/lib")
+) | Where-Object { Test-Path $_ } | Select-Object -Unique
 
 $pathSeparator = [System.IO.Path]::PathSeparator
 $previousPath = $env:PATH

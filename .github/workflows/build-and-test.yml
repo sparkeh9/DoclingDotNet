@@ -1,0 +1,111 @@
+name: Build and Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-native-artifacts:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Initialize workspace dependencies
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/init-workspace.ps1
+
+      - name: Build C-ABI Native Libraries
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/build-docling-parse-cabi.ps1 -Configuration Release -InstallDependencies
+
+      - name: Upload Native Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-artifacts-${{ matrix.os }}
+          path: |
+            upstream/deps/docling-parse/build-cabi/
+            upstream/deps/docling-parse/externals/bin/
+            upstream/deps/docling-parse/externals/lib/
+
+  pack-and-test:
+    needs: build-native-artifacts
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Initialize workspace dependencies
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/init-workspace.ps1
+
+      - name: Download All Release Artifacts for Packaging
+        uses: actions/download-artifact@v4
+        with:
+          pattern: native-artifacts-*
+          merge-multiple: true
+          path: upstream/deps/docling-parse
+
+      - name: Build .NET workspace
+        run: dotnet build dotnet/DoclingDotNet.slnx --configuration Release
+
+      - name: Build spike solution
+        run: dotnet build dotnet/DoclingDotNet.Examples.slnx --configuration Release
+
+      - name: Pack DoclingDotNet NuGet
+        run: dotnet pack dotnet/src/DoclingDotNet/DoclingDotNet.csproj --configuration Release --no-build -p:VERSION=0.0.0-ci -o .artifacts/nupkg
+
+      - name: Upload NuGet Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: doclingdotnet-nupkg-${{ matrix.os }}
+          path: .artifacts/nupkg
+
+      - name: Install Test Dependencies on Linux
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libjpeg-dev
+
+      - name: Run Smoke Assertions
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/test-docling-parse-cabi-smoke.ps1 -SkipConfigure -SkipBuild
+
+      - name: Run parity harness (baseline corpus slice)
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/run-docling-parity-harness.ps1 -SkipConfigure -SkipBuild -Output .artifacts/parity/docling-parse-parity-report.baseline.${{ matrix.os }}.json -MaxOcrDrift 0 -TextMismatchSeverity Minor -GeometryMismatchSeverity Minor -ContextMismatchSeverity Minor --max-pages 20
+
+      - name: Run parity harness (strict parity lane, non-blocking)
+        continue-on-error: true
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File ./scripts/run-docling-parity-harness.ps1 -SkipConfigure -SkipBuild -Output .artifacts/parity/docling-parse-parity-report.strict-geometry.${{ matrix.os }}.json -MaxOcrDrift 0 -TextMismatchSeverity Major -GeometryMismatchSeverity Major -ContextMismatchSeverity Major --max-pages 20
+
+      - name: Upload parity report artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-report-${{ matrix.os }}
+          path: .artifacts/parity
+          if-no-files-found: ignore

@@ -1,7 +1,8 @@
 param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
-    [switch]$SkipConfigure
+    [switch]$SkipConfigure,
+    [switch]$SkipBuild
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,6 +23,10 @@ $smokeArgs = @{
 
 if ($SkipConfigure) {
     $smokeArgs.SkipConfigure = $true
+}
+
+if ($SkipBuild) {
+    $smokeArgs.SkipBuild = $true
 }
 
 Write-Host "[test] executing smoke script with assertions..."

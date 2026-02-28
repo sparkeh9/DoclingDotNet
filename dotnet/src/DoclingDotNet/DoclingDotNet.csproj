@@ -30,23 +30,26 @@
     <PackageReference Include="Whisper.net.Runtime" Version="1.9.0" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <DoclingParseRoot>..\..\..\upstream\deps\docling-parse</DoclingParseRoot>
+    <DoclingParseBuildDir>$(DoclingParseRoot)\build-cabi\$(Configuration)</DoclingParseBuildDir>
+    <DoclingParseCDll>$(DoclingParseBuildDir)\docling_parse_c.dll</DoclingParseCDll>
+    <PdfResourcesDir>$(DoclingParseRoot)\docling_parse\pdf_resources</PdfResourcesDir>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Content Include="..\..\..\upstream\deps\docling-parse\build-cabi\Release\docling_parse_c.dll" PackagePath="runtimes\win-x64\native\" Pack="true" />
-    <Content Include="..\..\..\upstream\deps\docling-parse\externals\bin\*.dll" PackagePath="runtimes\win-x64\native\" Pack="true" />
-    <Content Include="..\..\..\upstream\deps\docling-parse\docling_parse\pdf_resources\**\*.*" PackagePath="content\pdf_resources\" Pack="true">
+    <Content Include="$(DoclingParseCDll)" PackagePath="runtimes\win-x64\native\" Pack="true" />
+    <Content Include="$(DoclingParseRoot)\externals\bin\*.dll" PackagePath="runtimes\win-x64\native\" Pack="true" />
+    <Content Include="$(PdfResourcesDir)\**\*.*" PackagePath="contentFiles\any\any\pdf_resources\" Pack="true">
+      <PackageCopyToOutput>true</PackageCopyToOutput>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <Target Name="ValidateNativeAssetsExists" BeforeTargets="GenerateNuspec">
-    <PropertyGroup>
-      <DoclingParseCDll>..\..\..\upstream\deps\docling-parse\build-cabi\Release\docling_parse_c.dll</DoclingParseCDll>
-      <PdfResourcesDir>..\..\..\upstream\deps\docling-parse\docling_parse\pdf_resources</PdfResourcesDir>
-    </PropertyGroup>
-    
-    <Error Condition="!Exists('$(DoclingParseCDll)')" Text="Native asset not found: $(DoclingParseCDll). Please ensure docling-parse has been built." />
+    <Error Condition="!Exists('$(DoclingParseCDll)')" Text="Native asset not found: $(DoclingParseCDll). Please ensure docling-parse has been built in the $(Configuration) configuration." />
     <!-- Check for at least one expected file in pdf_resources to validate the directory exists and is populated -->
-    <Error Condition="!Exists('$(PdfResourcesDir)\cmap-resources.txt')" Text="PDF resources not found: $(PdfResourcesDir). Please ensure docling-parse is updated." />
+    <Error Condition="!Exists('$(PdfResourcesDir)/cmap-resources.txt')" Text="PDF resources not found: $(PdfResourcesDir). Please ensure docling-parse is updated." />
   </Target>
 
 </Project>

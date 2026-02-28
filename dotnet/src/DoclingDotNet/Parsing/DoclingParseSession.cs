@@ -26,11 +26,20 @@ public sealed class DoclingParseSession : IDoclingParseSession
         var session = new DoclingParseSession(handle);
 
         // Automatically configure the resources directory if it exists near the executing assembly.
-        var appDir = AppDomain.CurrentDomain.BaseDirectory;
+        var appDir = AppContext.BaseDirectory;
         var defaultResourcesPath = Path.Combine(appDir, "pdf_resources");
         if (Directory.Exists(defaultResourcesPath))
         {
-            session.SetResourcesDir(defaultResourcesPath);
+            try
+            {
+                // Best-effort auto-configuration; failures are ignored so callers can still
+                // explicitly configure resources via SetResourcesDir if needed.
+                session.SetResourcesDir(defaultResourcesPath);
+            }
+            catch (InvalidOperationException)
+            {
+                // Ignore invalid/incomplete default resources; leave session usable.
+            }
         }
 
         return session;

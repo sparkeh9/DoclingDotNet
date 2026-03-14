@@ -1,0 +1,12 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <DoclingDotNetPdfResourcesSource>$(MSBuildThisFileDirectory)..\contentFiles\any\any\pdf_resources\</DoclingDotNetPdfResourcesSource>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('$(DoclingDotNetPdfResourcesSource)')">
+    <Content Include="$(DoclingDotNetPdfResourcesSource)**\*.*"
+             Link="pdf_resources\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             Visible="false" />
+  </ItemGroup>
+</Project>

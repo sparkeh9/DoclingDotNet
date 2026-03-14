@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -57,6 +57,9 @@
       <PackageCopyToOutput>true</PackageCopyToOutput>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+
+    <!-- MSBuild .targets for consuming projects to copy pdf_resources to output -->
+    <None Include="build\DoclingDotNet.targets" PackagePath="build\" Pack="true" />
   </ItemGroup>
 
   <Target Name="ValidateNativeAssetsExists" BeforeTargets="Pack">
